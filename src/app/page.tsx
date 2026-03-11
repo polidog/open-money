@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import type { EducationPlan } from "./lib/education";
-import type { Prepayment, RepaymentMethod } from "./lib/loan";
+import {
+  type Prepayment,
+  type RepaymentMethod,
+  calcInitialMonthlyPayment,
+} from "./lib/loan";
 import {
   type Child,
   type LifePlanInput,
@@ -378,6 +382,7 @@ function NumberInput({
   min,
   max,
   suffix,
+  maxMessage,
 }: {
   label: string;
   value: number;
@@ -386,7 +391,9 @@ function NumberInput({
   min?: number;
   max?: number;
   suffix?: string;
+  maxMessage?: string;
 }) {
+  const atMax = max !== undefined && value >= max;
   return (
     <div className="mb-6">
       <label className="mb-1 block text-xs font-medium uppercase tracking-widest text-neutral-500">
@@ -402,6 +409,9 @@ function NumberInput({
         max={max}
       />
       {suffix && <p className="mt-1 text-xs text-neutral-400">{suffix}</p>}
+      {atMax && maxMessage && (
+        <p className="mt-1 text-xs text-red-500">{maxMessage}</p>
+      )}
     </div>
   );
 }
@@ -512,6 +522,25 @@ export default function Home() {
     useState<MinimumIncomeResult | null>(null);
   const [hasPreviousSession, setHasPreviousSession] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const totalMonthlyIncome =
+    person1.monthlyIncome + (hasPartner ? person2.monthlyIncome : 0);
+  const loanMonthlyPaymentMan = hasLoan
+    ? calcInitialMonthlyPayment(
+        loanAmount * 10000,
+        loanRate / 100 / 12,
+        loanYears * 12,
+        loanMethod,
+      ) / 10000
+    : 0;
+  const maxMonthlyLiving = Math.max(
+    0,
+    Math.floor(totalMonthlyIncome - loanMonthlyPaymentMan),
+  );
+  const maxMonthlySavings = Math.max(
+    0,
+    Math.floor(totalMonthlyIncome - loanMonthlyPaymentMan - monthlyLiving),
+  );
 
   useEffect(() => {
     setHasPreviousSession(localStorage.getItem("lp_person1") !== null);
@@ -738,10 +767,8 @@ export default function Home() {
   const next = () => {
     if (step === 0 && !hasPartner) {
       setStep(2);
-    } else if (step === 3 && !hasChildren) {
+    } else if (step === 4 && !hasChildren) {
       setStep(5);
-    } else if (step === 4 && !hasLoan) {
-      setStep(6);
     } else if (step === TOTAL_STEPS - 1) {
       runSimulation();
     } else {
@@ -759,8 +786,6 @@ export default function Home() {
     } else if (step === 2 && !hasPartner) {
       setStep(0);
     } else if (step === 5 && !hasChildren) {
-      setStep(3);
-    } else if (step === 6 && !hasLoan) {
       setStep(4);
     } else {
       setStep(step - 1);
@@ -864,112 +889,6 @@ export default function Home() {
         );
 
       case 2:
-        return (
-          <QuestionCard question="世帯の生活">
-            <NumberInput
-              label="月間生活費（万円）"
-              value={monthlyLiving}
-              onChange={setMonthlyLiving}
-              step={1}
-              min={0}
-              suffix={fmtMan(monthlyLiving)}
-            />
-            <NumberInput
-              label="想定寿命"
-              value={lifeExpectancy}
-              onChange={setLifeExpectancy}
-              min={70}
-              max={110}
-            />
-          </QuestionCard>
-        );
-
-      case 3:
-        return (
-          <QuestionCard question="お子さまについて">
-            <YesNo
-              value={hasChildren}
-              onChange={(v) => {
-                setHasChildren(v);
-                if (v && children.length === 0) addChild();
-              }}
-              yesLabel="いる"
-              noLabel="いない"
-            />
-            {hasChildren && children.length > 0 && (
-              <div className="mt-8 space-y-6">
-                {children.map((child, i) => (
-                  <div
-                    key={`child-${i}`}
-                    className="border border-neutral-900 p-6"
-                  >
-                    <div className="mb-4 flex items-center justify-between">
-                      <input
-                        type="text"
-                        value={child.name}
-                        onChange={(e) => updateChild(i, "name", e.target.value)}
-                        className="border-b border-neutral-300 bg-transparent px-0 py-1 text-sm font-medium text-neutral-900 focus:border-neutral-900 focus:outline-none w-28"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          removeChild(i);
-                          if (children.length <= 1) setHasChildren(false);
-                        }}
-                        className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
-                      >
-                        削除
-                      </button>
-                    </div>
-                    <div className="mb-4">
-                      <NumberInput
-                        label="年齢"
-                        value={child.age}
-                        onChange={(v) => updateChild(i, "age", v)}
-                        min={0}
-                        max={22}
-                      />
-                    </div>
-                    <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">
-                      進学プラン
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
-                      {schoolOptions.map((opt) => (
-                        <div key={opt.key}>
-                          <label className="mb-1 block text-xs text-neutral-400">
-                            {opt.label}
-                          </label>
-                          <select
-                            value={child.plan[opt.key]}
-                            onChange={(e) =>
-                              updateChildPlan(i, opt.key, e.target.value)
-                            }
-                            className="w-full border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
-                          >
-                            {opt.choices.map((c) => (
-                              <option key={c.value} value={c.value}>
-                                {c.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addChild}
-                  className="w-full border border-dashed border-neutral-300 py-3 text-xs uppercase tracking-wider text-neutral-400 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
-                >
-                  + もう1人追加
-                </button>
-              </div>
-            )}
-          </QuestionCard>
-        );
-
-      case 4:
         return (
           <QuestionCard question="住宅ローン">
             <YesNo
@@ -1104,9 +1023,153 @@ export default function Home() {
           </QuestionCard>
         );
 
+      case 3:
+        return (
+          <QuestionCard question="世帯の生活">
+            <div className="mb-6 rounded border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+              <div className="flex justify-between">
+                <span>世帯の手取り月収</span>
+                <span>{fmtMan(totalMonthlyIncome)}</span>
+              </div>
+              {hasLoan && (
+                <div className="mt-1 flex justify-between">
+                  <span>住宅ローン返済額</span>
+                  <span>-{fmtMan(Math.round(loanMonthlyPaymentMan))}</span>
+                </div>
+              )}
+              <div className="mt-2 flex justify-between border-t border-neutral-300 pt-2 font-medium">
+                <span>生活費に使える上限</span>
+                <span>{fmtMan(maxMonthlyLiving)}</span>
+              </div>
+            </div>
+            <NumberInput
+              label="月間生活費（万円）"
+              value={monthlyLiving}
+              onChange={setMonthlyLiving}
+              step={1}
+              min={0}
+              max={maxMonthlyLiving}
+              suffix={fmtMan(monthlyLiving)}
+              maxMessage="月収からローン返済額を引いた上限に達しています"
+            />
+            <NumberInput
+              label="想定寿命"
+              value={lifeExpectancy}
+              onChange={setLifeExpectancy}
+              min={70}
+              max={110}
+            />
+          </QuestionCard>
+        );
+
+      case 4:
+        return (
+          <QuestionCard question="お子さまについて">
+            <YesNo
+              value={hasChildren}
+              onChange={(v) => {
+                setHasChildren(v);
+                if (v && children.length === 0) addChild();
+              }}
+              yesLabel="いる"
+              noLabel="いない"
+            />
+            {hasChildren && children.length > 0 && (
+              <div className="mt-8 space-y-6">
+                {children.map((child, i) => (
+                  <div
+                    key={`child-${i}`}
+                    className="border border-neutral-900 p-6"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <input
+                        type="text"
+                        value={child.name}
+                        onChange={(e) => updateChild(i, "name", e.target.value)}
+                        className="border-b border-neutral-300 bg-transparent px-0 py-1 text-sm font-medium text-neutral-900 focus:border-neutral-900 focus:outline-none w-28"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          removeChild(i);
+                          if (children.length <= 1) setHasChildren(false);
+                        }}
+                        className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
+                      >
+                        削除
+                      </button>
+                    </div>
+                    <div className="mb-4">
+                      <NumberInput
+                        label="年齢"
+                        value={child.age}
+                        onChange={(v) => updateChild(i, "age", v)}
+                        min={0}
+                        max={22}
+                      />
+                    </div>
+                    <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">
+                      進学プラン
+                    </p>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+                      {schoolOptions.map((opt) => (
+                        <div key={opt.key}>
+                          <label className="mb-1 block text-xs text-neutral-400">
+                            {opt.label}
+                          </label>
+                          <select
+                            value={child.plan[opt.key]}
+                            onChange={(e) =>
+                              updateChildPlan(i, opt.key, e.target.value)
+                            }
+                            className="w-full border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                          >
+                            {opt.choices.map((c) => (
+                              <option key={c.value} value={c.value}>
+                                {c.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addChild}
+                  className="w-full border border-dashed border-neutral-300 py-3 text-xs uppercase tracking-wider text-neutral-400 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
+                >
+                  + もう1人追加
+                </button>
+              </div>
+            )}
+          </QuestionCard>
+        );
+
       case 5:
         return (
           <QuestionCard question="貯蓄と資産運用">
+            <div className="mb-6 rounded border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+              <div className="flex justify-between">
+                <span>世帯の手取り月収</span>
+                <span>{fmtMan(totalMonthlyIncome)}</span>
+              </div>
+              {hasLoan && (
+                <div className="mt-1 flex justify-between">
+                  <span>住宅ローン返済額</span>
+                  <span>-{fmtMan(Math.round(loanMonthlyPaymentMan))}</span>
+                </div>
+              )}
+              <div className="mt-1 flex justify-between">
+                <span>生活費</span>
+                <span>-{fmtMan(monthlyLiving)}</span>
+              </div>
+              <div className="mt-2 flex justify-between border-t border-neutral-300 pt-2 font-medium">
+                <span>積立にまわせる上限</span>
+                <span>{fmtMan(maxMonthlySavings)}</span>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
               <NumberInput
                 label="現在の貯蓄額（万円）"
@@ -1122,7 +1185,9 @@ export default function Home() {
                 onChange={setMonthlySavings}
                 step={1}
                 min={0}
+                max={maxMonthlySavings}
                 suffix={fmtMan(monthlySavings)}
+                maxMessage="月収からローン返済額・生活費を引いた上限に達しています"
               />
             </div>
             <NumberInput

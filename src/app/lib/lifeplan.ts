@@ -319,12 +319,24 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     const annualSavings = anyoneWorking ? input.monthlySavings * 12 : 0;
 
     // 資産残高の更新
-    // 収入 - 生活費 - ローン - 教育費 を反映
-    const netCashFlow =
+    const surplus =
       annualIncome - annualLiving - annualLoanPayment - annualEducation;
 
-    // まず収支を反映し、残高がプラスなら運用益を適用
-    balance += netCashFlow;
+    let actualSavings: number;
+    if (anyoneWorking) {
+      if (surplus >= 0) {
+        // 余裕あり → 積立額を資産に加算（ただし余剰の範囲内）
+        actualSavings = Math.min(annualSavings, surplus);
+      } else {
+        // 赤字 → 資産を取り崩す
+        actualSavings = surplus;
+      }
+    } else {
+      // 老後: 年金 - 生活費の差額をそのまま反映
+      actualSavings = surplus;
+    }
+
+    balance += actualSavings;
     if (balance > 0) {
       balance = balance * (1 + input.annualReturn / 100);
     }
@@ -344,7 +356,7 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       loanPayment: Math.round(annualLoanPayment),
       educationCost: Math.round(annualEducation),
       livingCost: Math.round(annualLiving),
-      savings: Math.round(netCashFlow),
+      savings: Math.round(actualSavings),
       balance: Math.round(balance),
     });
   }

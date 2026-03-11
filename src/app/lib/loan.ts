@@ -132,7 +132,7 @@ export function calculateLoan(
   };
 }
 
-function calcInitialMonthlyPayment(
+export function calcInitialMonthlyPayment(
   loanAmount: number,
   monthlyRate: number,
   totalMonths: number,
