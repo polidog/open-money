@@ -1203,13 +1203,13 @@ export default function Home() {
   ];
 
   const TabBar = () => (
-    <div className="mb-12 flex gap-1 border-b border-neutral-200">
+    <div className="mb-8 sm:mb-12 flex gap-1 border-b border-neutral-200">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => setActiveTab(tab.id)}
-          className={`px-6 py-3 text-xs font-medium uppercase tracking-widest transition-colors ${
+          className={`px-3 sm:px-6 py-2 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest transition-colors ${
             activeTab === tab.id
               ? "border-b-2 border-neutral-900 text-neutral-900"
               : "text-neutral-400 hover:text-neutral-600"
@@ -1227,9 +1227,9 @@ export default function Home() {
       <div className="min-h-screen bg-white">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6 sm:py-4">
             <h1
-              className="text-2xl font-bold uppercase tracking-[0.2em] text-neutral-900 cursor-pointer"
+              className="text-lg sm:text-2xl font-bold uppercase tracking-[0.2em] text-neutral-900 cursor-pointer"
               onClick={() => {
                 window.location.hash = "";
                 setStep(-1);
@@ -1264,49 +1264,49 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="mx-auto max-w-7xl px-6 pt-24 pb-20">
+        <div className="mx-auto max-w-7xl px-3 pt-20 pb-12 sm:px-6 sm:pt-24 sm:pb-20">
           {/* Hero */}
-          <div className="mb-16">
-            <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">
+          <div className="mb-8 sm:mb-16">
+            <p className="mb-2 sm:mb-3 text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">
               Your Life Plan
             </p>
-            <h2 className="text-5xl font-medium tracking-tight text-neutral-900 sm:text-6xl">
+            <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-neutral-900 md:text-6xl">
               シミュレーション結果
             </h2>
           </div>
 
           {/* Summary cards */}
-          <div className="mb-16 grid grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-5">
-            <div className="bg-white p-8">
-              <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+          <div className="mb-8 sm:mb-16 grid grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-5">
+            <div className="bg-white p-4 sm:p-8">
+              <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                 住宅ローン総額
               </p>
-              <p className="text-2xl font-medium tracking-tight text-neutral-900">
+              <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                 {fmtYenToMan(result.totalLoanPayment)}
               </p>
             </div>
-            <div className="bg-white p-8">
-              <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            <div className="bg-white p-4 sm:p-8">
+              <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                 教育費総額
               </p>
-              <p className="text-2xl font-medium tracking-tight text-neutral-900">
+              <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                 {fmtYenToMan(result.totalEducationCost)}
               </p>
             </div>
-            <div className="bg-white p-8">
-              <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            <div className="bg-white p-4 sm:p-8">
+              <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                 退職時の資産
               </p>
-              <p className="text-2xl font-medium tracking-tight text-neutral-900">
+              <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                 {fmtYenToMan(result.balanceAtRetirement)}
               </p>
             </div>
-            <div className="bg-white p-8">
-              <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            <div className="bg-white p-4 sm:p-8">
+              <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                 資産寿命
               </p>
               <p
-                className={`text-2xl font-medium tracking-tight ${result.assetDepletionAge === null ? "text-neutral-900" : "text-red-600"}`}
+                className={`text-base sm:text-2xl font-medium tracking-tight ${result.assetDepletionAge === null ? "text-neutral-900" : "text-red-600"}`}
               >
                 {result.assetDepletionAge === null
                   ? `${lifeExpectancy}歳まで安心`
@@ -1314,15 +1314,15 @@ export default function Home() {
               </p>
             </div>
             {inflationRate > 0 && (
-              <div className="bg-white p-8">
-                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+              <div className="bg-white p-4 sm:p-8">
+                <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                   物価上昇率
                 </p>
-                <p className="text-2xl font-medium tracking-tight text-neutral-900">
+                <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                   年{inflationRate}%
                 </p>
                 {resultNoInflation && (
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-[10px] sm:text-xs text-neutral-500">
                     インフレなし比較: 資産残高{" "}
                     {fmtYenToMan(
                       result.retirementBalance -
@@ -1347,12 +1347,12 @@ export default function Home() {
                   minimumIncome.minimumMonthlyIncome - currentMonthlyYen;
                 const isSufficient = shortage <= 0;
                 return (
-                  <div className="bg-white p-8">
-                    <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                  <div className="bg-white p-4 sm:p-8">
+                    <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                       最低必要世帯月収
                     </p>
                     <p
-                      className={`text-2xl font-medium tracking-tight ${isSufficient ? "text-neutral-900" : "text-red-600"}`}
+                      className={`text-base sm:text-2xl font-medium tracking-tight ${isSufficient ? "text-neutral-900" : "text-red-600"}`}
                     >
                       {fmtYenToMan(minimumIncome.minimumMonthlyIncome)}
                     </p>
@@ -1390,29 +1390,29 @@ export default function Home() {
           {activeTab === "loan" && result.loanResult && (
             <div className="space-y-12">
               <div className="grid grid-cols-3 gap-px bg-neutral-200">
-                <div className="bg-white p-8">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                <div className="bg-white p-4 sm:p-8">
+                  <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                     {loanMethod === "equal_principal"
                       ? "初回の支払額"
                       : "月々の支払額"}
                   </p>
-                  <p className="text-2xl font-medium tracking-tight text-neutral-900">
+                  <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                     {fmtYen(result.loanResult.monthlyPayment)}
                   </p>
                 </div>
-                <div className="bg-white p-8">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                <div className="bg-white p-4 sm:p-8">
+                  <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                     総支払額
                   </p>
-                  <p className="text-2xl font-medium tracking-tight text-neutral-900">
+                  <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                     {fmtYen(result.loanResult.totalPayment)}
                   </p>
                 </div>
-                <div className="bg-white p-8">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                <div className="bg-white p-4 sm:p-8">
+                  <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                     利息合計
                   </p>
-                  <p className="text-2xl font-medium tracking-tight text-neutral-900">
+                  <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
                     {fmtYen(result.loanResult.totalInterest)}
                   </p>
                 </div>
@@ -1425,8 +1425,8 @@ export default function Home() {
           {activeTab === "education" &&
             result.educationSummary.yearlyDetails.length > 0 && (
               <div>
-                <div className="mb-8">
-                  <h3 className="mb-6 text-2xl font-medium tracking-tight text-neutral-900">
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="mb-4 sm:mb-6 text-xl sm:text-2xl font-medium tracking-tight text-neutral-900">
                     教育費の詳細
                   </h3>
                   {result.educationSummary.perChildTotal.length > 0 && (
@@ -1530,42 +1530,42 @@ export default function Home() {
 
           {activeTab === "table" && (
             <div>
-              <h3 className="mb-2 text-2xl font-medium tracking-tight text-neutral-900">
+              <h3 className="mb-2 text-xl sm:text-2xl font-medium tracking-tight text-neutral-900">
                 資産推移テーブル
               </h3>
-              <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">
+              <p className="mb-6 sm:mb-8 text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400">
                 Asset Transition Table
               </p>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b border-neutral-900 text-left">
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                         年齢
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
                         区分
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         年収入
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         生活費
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         ローン
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         教育費
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         年間収支
                       </th>
-                      <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         資産残高
                       </th>
                       {resultNoInflation && (
-                        <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                           インフレ影響
                         </th>
                       )}
@@ -1577,36 +1577,36 @@ export default function Home() {
                         key={row.age}
                         className={`border-b border-neutral-100 hover:bg-neutral-50 transition-colors ${row.age === person1.retirementAge ? "bg-neutral-50" : ""} ${row.balance < 0 ? "bg-red-50/50" : ""}`}
                       >
-                        <td className="px-4 py-3 font-medium text-neutral-900">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-neutral-900">
                           {row.age}歳
                         </td>
-                        <td className="px-4 py-3 text-neutral-500">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-neutral-500">
                           {row.phase}
                         </td>
-                        <td className="px-4 py-3 text-right text-neutral-600">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
                           {fmtYenToMan(row.income)}
                         </td>
-                        <td className="px-4 py-3 text-right text-neutral-600">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
                           {fmtYenToMan(row.livingCost)}
                         </td>
-                        <td className="px-4 py-3 text-right text-neutral-600">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
                           {row.loanPayment > 0
                             ? fmtYenToMan(row.loanPayment)
                             : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right text-neutral-600">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
                           {row.educationCost > 0
                             ? fmtYenToMan(row.educationCost)
                             : "-"}
                         </td>
                         <td
-                          className={`px-4 py-3 text-right font-medium ${row.savings >= 0 ? "text-neutral-900" : "text-red-600"}`}
+                          className={`px-2 py-2 sm:px-4 sm:py-3 text-right font-medium ${row.savings >= 0 ? "text-neutral-900" : "text-red-600"}`}
                         >
                           {row.savings >= 0 ? "+" : ""}
                           {fmtYenToMan(row.savings)}
                         </td>
                         <td
-                          className={`px-4 py-3 text-right font-medium ${row.balance >= 0 ? "text-neutral-900" : "text-red-600"}`}
+                          className={`px-2 py-2 sm:px-4 sm:py-3 text-right font-medium ${row.balance >= 0 ? "text-neutral-900" : "text-red-600"}`}
                         >
                           {fmtYenToMan(row.balance)}
                         </td>
@@ -1619,7 +1619,7 @@ export default function Home() {
                             : 0;
                           return (
                             <td
-                              className={`px-4 py-3 text-right text-xs ${diff < 0 ? "text-red-500" : "text-neutral-400"}`}
+                              className={`px-2 py-2 sm:px-4 sm:py-3 text-right text-xs ${diff < 0 ? "text-red-500" : "text-neutral-400"}`}
                             >
                               {diff === 0
                                 ? "-"
