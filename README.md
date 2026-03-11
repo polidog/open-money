@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# open-money
 
-## Getting Started
+日本向けのオープンソース家計シミュレーターです。住宅ローン・教育費・老後資金をまとめてシミュレーションし、人生全体の資産推移を可視化できます。
 
-First, run the development server:
+## 機能
+
+### ライフプランシミュレーター（メインページ）
+
+収入・支出・ローン・教育費・老後資金を統合した人生設計シミュレーター
+
+- 本人＋配偶者の収入設定
+- 住宅ローン（元利均等・元金均等、繰上返済対応）
+- 子ども複数人の教育費（幼稚園〜大学、公立/私立）
+- 貯蓄・投資（運用利回り設定）
+- 老後の年金・生活費
+- 5つのモデルケース（共働き夫婦、DINKS、独身など）
+- 年次の資産推移グラフ・詳細テーブル
+
+### 住宅ローンシミュレーター（`/loan`）
+
+- 借入額・金利・返済期間から月々の返済額を計算
+- 繰上返済シミュレーション（期間短縮型・返済額軽減型）
+- 元本・利息の内訳グラフ、残高推移グラフ
+- 月次/年次の返済スケジュール表
+
+### 教育費シミュレーター（`/education`）
+
+- 子どもの年齢と進路に応じた教育費の総額を算出
+- 必要な毎月の積立額を逆算
+- 年間教育費・累計コスト vs 貯蓄残高のグラフ
+
+### 老後資金シミュレーター（`/retirement`）
+
+- 退職時の資産残高と資産枯渇年齢を予測
+- 年金・退職後の生活費・運用利回りを考慮
+- 資産残高の推移グラフ・年次テーブル
+
+## 技術スタック
+
+- [Next.js](https://nextjs.org/) 16 (App Router)
+- [React](https://react.dev/) 19
+- [TypeScript](https://www.typescriptlang.org/) 5
+- [Tailwind CSS](https://tailwindcss.com/) 4
+- [Recharts](https://recharts.org/) 3
+- [Biome](https://biomejs.dev/) 2（リンター・フォーマッター）
+
+## セットアップ
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 でアプリが起動します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## スクリプト
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| コマンド | 説明 |
+|---|---|
+| `npm run dev` | 開発サーバー起動 |
+| `npm run build` | プロダクションビルド |
+| `npm run start` | プロダクションサーバー起動 |
+| `npm run lint` | Biome によるリント |
+| `npm run format` | Biome によるフォーマット |
 
-## Learn More
+## ライセンス
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
