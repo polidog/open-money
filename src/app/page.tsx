@@ -56,6 +56,7 @@ export default function Home() {
   const [loanAmount, setLoanAmount] = useLocalStorageState("lp_loanAmount", 3500);
   const [loanRate, setLoanRate] = useLocalStorageState("lp_loanRate", 1.5);
   const [loanYears, setLoanYears] = useLocalStorageState("lp_loanYears", 35);
+  const [loanStartAge, setLoanStartAge] = useLocalStorageState("lp_loanStartAge", 30);
   const [loanMethod, setLoanMethod] = useLocalStorageState<RepaymentMethod>("lp_loanMethod", "equal_installment");
   const [loanPrepayments, setLoanPrepayments] = useLocalStorageState<{ yearFromStart: number; amount: number; type: "shorten" | "reduce" }[]>("lp_loanPrepayments", []);
 
@@ -127,6 +128,7 @@ export default function Home() {
       loanAmount: toYen(loanAmount),
       loanRate,
       loanYears,
+      loanStartAge,
       loanMethod,
       loanPrepayments: loanPrepayments.map((p) => ({
         ...p,
@@ -314,6 +316,7 @@ export default function Home() {
                   <NumberInput label="借入額（万円）" value={loanAmount} onChange={setLoanAmount} step={100} min={0} suffix={fmtMan(loanAmount)} />
                   <NumberInput label="金利（年利 %）" value={loanRate} onChange={setLoanRate} step={0.01} min={0} max={20} />
                   <NumberInput label="返済期間（年）" value={loanYears} onChange={setLoanYears} min={1} max={50} />
+                  <NumberInput label="借入時の年齢" value={loanStartAge} onChange={setLoanStartAge} min={18} max={80} />
                   <div className="mb-4">
                     <label className="mb-1 block text-sm font-medium text-gray-600">返済方式</label>
                     <select value={loanMethod} onChange={(e) => setLoanMethod(e.target.value as RepaymentMethod)} className={inputCls}>

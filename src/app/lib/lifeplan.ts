@@ -26,6 +26,7 @@ export type LifePlanInput = {
   loanAmount: number;
   loanRate: number;
   loanYears: number;
+  loanStartAge: number;
   loanMethod: RepaymentMethod;
   loanPrepayments: Prepayment[];
 
@@ -132,10 +133,15 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
   let loanMonthlyPayment = 0;
   let loanRemaining = 0;
   let loanMonthlyPrincipal = 0;
+  let loanYearCount = 0;
   const loanTotalMonths = input.loanYears * 12;
   const loanMonthlyRate = input.loanRate / 100 / 12;
 
-  if (input.hasLoan && input.loanAmount > 0) {
+  // 借入時年齢から経過年数を計算
+  const loanElapsedYears = Math.max(0, input.person1.age - input.loanStartAge);
+  const loanElapsedMonths = loanElapsedYears * 12;
+
+  if (input.hasLoan && input.loanAmount > 0 && loanElapsedYears < input.loanYears) {
     loanRemaining = input.loanAmount;
     if (input.loanMethod === "equal_principal") {
       loanMonthlyPrincipal = input.loanAmount / loanTotalMonths;
@@ -150,6 +156,21 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
           ((1 + loanMonthlyRate) ** loanTotalMonths - 1);
       }
     }
+
+    // 経過分の返済をシミュレートして現在の残高を求める
+    for (let m = 0; m < loanElapsedMonths; m++) {
+      if (loanRemaining <= 0) break;
+      const interest = loanRemaining * loanMonthlyRate;
+      let principal: number;
+      if (input.loanMethod === "equal_principal") {
+        principal = Math.min(loanMonthlyPrincipal, loanRemaining);
+      } else {
+        const payment = Math.min(loanMonthlyPayment, loanRemaining + interest);
+        principal = payment - interest;
+      }
+      loanRemaining = Math.max(0, loanRemaining - principal);
+    }
+    loanYearCount = loanElapsedYears;
   }
 
   const prepaymentMap = new Map<number, Prepayment>();
@@ -159,7 +180,6 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
 
   let totalLoanPayment = 0;
   let totalEducationCost = 0;
-  let loanYearCount = 0;
   let balanceAtRetirement = 0;
   let assetDepletionAge: number | null = null;
 
@@ -332,7 +352,7 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       input.loanAmount,
       input.loanRate,
       input.loanYears,
-      input.person1.age,
+      input.loanStartAge,
       input.loanMethod,
       input.loanPrepayments,
     );
