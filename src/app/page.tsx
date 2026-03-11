@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { EducationPlan } from "./lib/education";
 import type { Prepayment, RepaymentMethod } from "./lib/loan";
 import {
@@ -208,6 +208,11 @@ export default function Home() {
   const [retirementMonthlyExpense, setRetirementMonthlyExpense] = useLocalStorageState("lp_retirementExpense", 25);
 
   const [result, setResult] = useState<LifePlanResult | null>(null);
+  const [hasPreviousSession, setHasPreviousSession] = useState(false);
+
+  useEffect(() => {
+    setHasPreviousSession(localStorage.getItem("lp_person1") !== null);
+  }, []);
 
   const fmtMan = (v: number) => `${v.toLocaleString()}万円`;
   const fmtYenToMan = (v: number) => `${(v / 10000).toFixed(0)}万円`;
@@ -732,12 +737,26 @@ export default function Home() {
           {/* Hero */}
           <div className="mx-auto max-w-5xl mb-20">
             <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">Life Plan Simulator</p>
-            <h1 className="text-6xl font-medium tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl">
-              Open<br />Money
+            <h1 className="text-6xl font-medium uppercase tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl">
+              OPEN<br /><span className="bg-neutral-900 text-white px-3 inline-block">MONEY</span>
             </h1>
           </div>
 
           <div className="mx-auto max-w-5xl">
+            {hasPreviousSession && (
+              <div className="mb-16">
+                <button
+                  type="button"
+                  onClick={() => setStep(0)}
+                  className="group w-full border border-neutral-900 bg-neutral-900 p-8 text-left transition-colors hover:bg-neutral-800"
+                >
+                  <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">Continue</p>
+                  <h3 className="text-xl font-medium tracking-tight text-white">前回の続きから</h3>
+                  <p className="mt-2 text-sm text-neutral-400">前回入力したデータが保存されています</p>
+                </button>
+              </div>
+            )}
+
             <div className="mb-12">
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">Model Cases</p>
               <div className="mt-1 h-px bg-neutral-200" />
@@ -783,14 +802,7 @@ export default function Home() {
   // Question screen
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      {/* Fixed header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <h1 className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-900">OpenMoney</h1>
-        </div>
-      </header>
-
-      <div className="flex-1 flex flex-col justify-center px-6 pt-20 pb-8">
+      <div className="flex-1 flex flex-col justify-center px-6 py-8">
         {renderStep()}
 
         {/* Step progress + nav */}
