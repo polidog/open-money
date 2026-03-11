@@ -178,6 +178,41 @@ const modelCases: ModelCase[] = [
   },
 ];
 
+type ShareData = {
+  p1: Person;
+  hp: boolean;
+  p2: Person;
+  le: number;
+  ml: number;
+  hl: boolean;
+  la: number;
+  lr: number;
+  ly: number;
+  lsa: number;
+  lm: RepaymentMethod;
+  lpp: { y: number; a: number; t: "shorten" | "reduce" }[];
+  hc: boolean;
+  ch: Child[];
+  cs: number;
+  ms: number;
+  ar: number;
+  re: number;
+};
+
+function encodeShareData(d: ShareData): string {
+  const json = JSON.stringify(d);
+  return btoa(unescape(encodeURIComponent(json)));
+}
+
+function decodeShareData(hash: string): ShareData | null {
+  try {
+    const json = decodeURIComponent(escape(atob(hash)));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const [step, setStep] = useState(-1);
 
@@ -209,10 +244,50 @@ export default function Home() {
 
   const [result, setResult] = useState<LifePlanResult | null>(null);
   const [hasPreviousSession, setHasPreviousSession] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setHasPreviousSession(localStorage.getItem("lp_person1") !== null);
+
+    // Restore from URL hash
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const data = decodeShareData(hash);
+      if (data) {
+        setPerson1(data.p1);
+        setHasPartner(data.hp);
+        setPerson2(data.p2);
+        setLifeExpectancy(data.le);
+        setMonthlyLiving(data.ml);
+        setHasLoan(data.hl);
+        setLoanAmount(data.la);
+        setLoanRate(data.lr);
+        setLoanYears(data.ly);
+        setLoanStartAge(data.lsa);
+        setLoanMethod(data.lm);
+        setLoanPrepayments(data.lpp.map((p) => ({ yearFromStart: p.y, amount: p.a, type: p.t })));
+        setHasChildren(data.hc);
+        setChildren(data.ch);
+        setCurrentSavings(data.cs);
+        setMonthlySavings(data.ms);
+        setAnnualReturn(data.ar);
+        setRetirementMonthlyExpense(data.re);
+        // Auto-run simulation after a tick
+        setTimeout(() => {
+          setStep(-2); // trigger auto-run
+        }, 100);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-run when loaded from URL
+  useEffect(() => {
+    if (step === -2) {
+      runSimulationFromCurrentState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const fmtMan = (v: number) => `${v.toLocaleString()}万円`;
   const fmtYenToMan = (v: number) => `${(v / 10000).toFixed(0)}万円`;
@@ -270,7 +345,50 @@ export default function Home() {
     setLoanPrepayments(updated);
   };
 
-  const runSimulation = () => {
+  const buildShareUrl = () => {
+    const data: ShareData = {
+      p1: person1,
+      hp: hasPartner,
+      p2: person2,
+      le: lifeExpectancy,
+      ml: monthlyLiving,
+      hl: hasLoan,
+      la: loanAmount,
+      lr: loanRate,
+      ly: loanYears,
+      lsa: loanStartAge,
+      lm: loanMethod,
+      lpp: loanPrepayments.map((p) => ({ y: p.yearFromStart, a: p.amount, t: p.type })),
+      hc: hasChildren,
+      ch: hasChildren ? children : [],
+      cs: currentSavings,
+      ms: monthlySavings,
+      ar: annualReturn,
+      re: retirementMonthlyExpense,
+    };
+    const hash = encodeShareData(data);
+    return `${window.location.origin}${window.location.pathname}#${hash}`;
+  };
+
+  const handleShare = async () => {
+    const url = buildShareUrl();
+    window.history.replaceState(null, "", url);
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareX = () => {
+    const url = buildShareUrl();
+    window.history.replaceState(null, "", url);
+    const r = result;
+    const text = r
+      ? `OpenMoneyでライフプランをシミュレーション\n住宅ローン: ${fmtYenToMan(r.totalLoanPayment)} / 教育費: ${fmtYenToMan(r.totalEducationCost)} / 資産寿命: ${r.assetDepletionAge === null ? `${lifeExpectancy}歳まで安心` : `${r.assetDepletionAge}歳で枯渇`}`
+      : "OpenMoneyでライフプランをシミュレーション";
+    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank");
+  };
+
+  const runSimulationFromCurrentState = () => {
     const input: LifePlanInput = {
       person1: {
         ...person1,
@@ -303,6 +421,10 @@ export default function Home() {
     };
     setResult(calculateLifePlan(input));
     setStep(TOTAL_STEPS);
+  };
+
+  const runSimulation = () => {
+    runSimulationFromCurrentState();
   };
 
   const next = () => {
@@ -568,9 +690,17 @@ export default function Home() {
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <h1 className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-900">OpenMoney</h1>
-            <button type="button" onClick={prev} className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors">
-              Edit
-            </button>
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={handleShare} className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors">
+                {copied ? "Copied!" : "Share"}
+              </button>
+              <button type="button" onClick={handleShareX} className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors">
+                Post to X
+              </button>
+              <button type="button" onClick={prev} className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors">
+                Edit
+              </button>
+            </div>
           </div>
         </header>
 
