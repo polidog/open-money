@@ -24,8 +24,14 @@ import { useLocalStorageState } from "../lib/useLocalStorageState";
 
 export default function EducationPage() {
   const [childAge, setChildAge] = useLocalStorageState("edu_childAge", 0);
-  const [currentSavings, setCurrentSavings] = useLocalStorageState("edu_currentSavings", 0);
-  const [annualReturn, setAnnualReturn] = useLocalStorageState("edu_annualReturn", 1.0);
+  const [currentSavings, setCurrentSavings] = useLocalStorageState(
+    "edu_currentSavings",
+    0,
+  );
+  const [annualReturn, setAnnualReturn] = useLocalStorageState(
+    "edu_annualReturn",
+    1.0,
+  );
   const [plan, setPlan] = useLocalStorageState<EducationPlan>("edu_plan", {
     kindergarten: "public",
     elementary: "public",
@@ -73,10 +79,7 @@ export default function EducationPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="mx-auto max-w-6xl">
         <div className="mb-6">
-          <Link
-            href="/"
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <Link href="/" className="text-sm text-blue-600 hover:underline">
             &larr; OpenMoney トップへ
           </Link>
         </div>
@@ -144,9 +147,7 @@ export default function EducationPage() {
           </div>
 
           <div className="mt-6">
-            <p className="mb-3 text-sm font-medium text-gray-700">
-              進学プラン
-            </p>
+            <p className="mb-3 text-sm font-medium text-gray-700">進学プラン</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {schoolSelect("幼稚園", "kindergarten", [
                 { value: "public", label: "公立" },

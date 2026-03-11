@@ -90,9 +90,7 @@ export function calculateLoan(
             const newMonths = totalMonths - i;
             if (newMonths > 0 && monthlyRate > 0) {
               currentMonthlyPayment =
-                (newRemaining *
-                  monthlyRate *
-                  (1 + monthlyRate) ** newMonths) /
+                (newRemaining * monthlyRate * (1 + monthlyRate) ** newMonths) /
                 ((1 + monthlyRate) ** newMonths - 1);
             } else if (newMonths > 0) {
               currentMonthlyPayment = newRemaining / newMonths;

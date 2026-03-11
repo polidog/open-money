@@ -32,7 +32,10 @@ export default function LoanCharts({ result }: Props) {
   const years = schedule[schedule.length - 1].year;
   for (let y = 1; y <= years; y++) {
     const monthsInYear = schedule.filter((s) => s.year === y);
-    const totalPrincipal = monthsInYear.reduce((sum, m) => sum + m.principal, 0);
+    const totalPrincipal = monthsInYear.reduce(
+      (sum, m) => sum + m.principal,
+      0,
+    );
     const totalInterest = monthsInYear.reduce((sum, m) => sum + m.interest, 0);
     const lastMonth = monthsInYear[monthsInYear.length - 1];
     yearlyData.push({
@@ -60,8 +63,12 @@ export default function LoanCharts({ result }: Props) {
   return (
     <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
       <div>
-        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">年間支払い内訳</h3>
-        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">Principal & Interest</p>
+        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">
+          年間支払い内訳
+        </h3>
+        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">
+          Principal & Interest
+        </p>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={yearlyData}>
             <CartesianGrid stroke="#f5f5f5" strokeDasharray="none" />
@@ -80,7 +87,10 @@ export default function LoanCharts({ result }: Props) {
               axisLine={false}
             />
             <Tooltip
-              formatter={(value, name) => [`${Number(value).toLocaleString()}円`, name]}
+              formatter={(value, name) => [
+                `${Number(value).toLocaleString()}円`,
+                name,
+              ]}
               labelFormatter={(label) => `${label}歳`}
               contentStyle={tooltipStyle}
             />
@@ -96,8 +106,12 @@ export default function LoanCharts({ result }: Props) {
       </div>
 
       <div>
-        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">ローン残高の推移</h3>
-        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">Remaining Balance</p>
+        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">
+          ローン残高の推移
+        </h3>
+        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">
+          Remaining Balance
+        </p>
         <ResponsiveContainer width="100%" height={350}>
           <AreaChart data={yearlyData}>
             <CartesianGrid stroke="#f5f5f5" strokeDasharray="none" />
@@ -116,7 +130,10 @@ export default function LoanCharts({ result }: Props) {
               axisLine={false}
             />
             <Tooltip
-              formatter={(value) => [`${Number(value).toLocaleString()}円`, "残高"]}
+              formatter={(value) => [
+                `${Number(value).toLocaleString()}円`,
+                "残高",
+              ]}
               labelFormatter={(label) => `${label}歳`}
               contentStyle={tooltipStyle}
             />

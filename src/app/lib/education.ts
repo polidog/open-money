@@ -46,8 +46,18 @@ export function calculateEducation(
   currentSavings: number,
   annualReturn: number,
 ): EducationResult {
-  const stages: { key: string; label: string; type: string; startAge: number }[] = [
-    { key: "kindergarten", label: "幼稚園", type: plan.kindergarten, startAge: 3 },
+  const stages: {
+    key: string;
+    label: string;
+    type: string;
+    startAge: number;
+  }[] = [
+    {
+      key: "kindergarten",
+      label: "幼稚園",
+      type: plan.kindergarten,
+      startAge: 3,
+    },
     { key: "elementary", label: "小学校", type: plan.elementary, startAge: 6 },
     { key: "juniorHigh", label: "中学校", type: plan.juniorHigh, startAge: 12 },
     { key: "highSchool", label: "高校", type: plan.highSchool, startAge: 15 },
@@ -81,9 +91,10 @@ export function calculateEducation(
   }
 
   // 必要な月額積立額を計算（運用利回りを考慮）
-  const yearsUntilEnd = yearlyCosts.length > 0
-    ? yearlyCosts[yearlyCosts.length - 1].childAge - childAge + 1
-    : 0;
+  const yearsUntilEnd =
+    yearlyCosts.length > 0
+      ? yearlyCosts[yearlyCosts.length - 1].childAge - childAge + 1
+      : 0;
   const shortage = Math.max(0, totalCost - currentSavings);
   const monthlyRate = annualReturn / 100 / 12;
   const totalMonths = yearsUntilEnd * 12;

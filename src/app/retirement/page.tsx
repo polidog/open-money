@@ -13,21 +13,42 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  type RetirementResult,
-  calculateRetirement,
-} from "../lib/retirement";
+import { type RetirementResult, calculateRetirement } from "../lib/retirement";
 import { useLocalStorageState } from "../lib/useLocalStorageState";
 
 export default function RetirementPage() {
-  const [currentAge, setCurrentAge] = useLocalStorageState("ret_currentAge", 30);
-  const [retirementAge, setRetirementAge] = useLocalStorageState("ret_retirementAge", 65);
-  const [lifeExpectancy, setLifeExpectancy] = useLocalStorageState("ret_lifeExpectancy", 90);
-  const [currentSavings, setCurrentSavings] = useLocalStorageState("ret_currentSavings", 1000000);
-  const [monthlyContribution, setMonthlyContribution] = useLocalStorageState("ret_monthlyContribution", 30000);
-  const [annualReturn, setAnnualReturn] = useLocalStorageState("ret_annualReturn", 3.0);
-  const [pensionMonthly, setPensionMonthly] = useLocalStorageState("ret_pensionMonthly", 150000);
-  const [monthlyExpense, setMonthlyExpense] = useLocalStorageState("ret_monthlyExpense", 250000);
+  const [currentAge, setCurrentAge] = useLocalStorageState(
+    "ret_currentAge",
+    30,
+  );
+  const [retirementAge, setRetirementAge] = useLocalStorageState(
+    "ret_retirementAge",
+    65,
+  );
+  const [lifeExpectancy, setLifeExpectancy] = useLocalStorageState(
+    "ret_lifeExpectancy",
+    90,
+  );
+  const [currentSavings, setCurrentSavings] = useLocalStorageState(
+    "ret_currentSavings",
+    1000000,
+  );
+  const [monthlyContribution, setMonthlyContribution] = useLocalStorageState(
+    "ret_monthlyContribution",
+    30000,
+  );
+  const [annualReturn, setAnnualReturn] = useLocalStorageState(
+    "ret_annualReturn",
+    3.0,
+  );
+  const [pensionMonthly, setPensionMonthly] = useLocalStorageState(
+    "ret_pensionMonthly",
+    150000,
+  );
+  const [monthlyExpense, setMonthlyExpense] = useLocalStorageState(
+    "ret_monthlyExpense",
+    250000,
+  );
   const [result, setResult] = useState<RetirementResult | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -187,9 +208,7 @@ export default function RetirementPage() {
                 <p className="text-2xl font-bold text-blue-600">
                   {result.monthlyWithdrawal.toLocaleString()}円
                 </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  生活費 - 年金
-                </p>
+                <p className="mt-1 text-xs text-gray-400">生活費 - 年金</p>
               </div>
               <div className="rounded-xl bg-white p-6 shadow-md text-center">
                 <p className="text-sm text-gray-500">資産寿命</p>
@@ -224,9 +243,7 @@ export default function RetirementPage() {
                     fontSize={12}
                   />
                   <Tooltip
-                    formatter={(value) =>
-                      `${Number(value).toLocaleString()}円`
-                    }
+                    formatter={(value) => `${Number(value).toLocaleString()}円`}
                     labelFormatter={(label) => `${label}歳`}
                   />
                   <Legend />
@@ -278,9 +295,7 @@ export default function RetirementPage() {
                             : "-"}
                         </td>
                         <td className="px-3 py-2 text-right">
-                          {row.withdrawal > 0
-                            ? formatMan(row.withdrawal)
-                            : "-"}
+                          {row.withdrawal > 0 ? formatMan(row.withdrawal) : "-"}
                         </td>
                         <td className="px-3 py-2 text-right">
                           {formatMan(row.balance)}

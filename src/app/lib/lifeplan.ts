@@ -43,9 +43,6 @@ export type LifePlanInput = {
   monthlySavings: number;
   annualReturn: number;
   retirementMonthlyExpense: number;
-
-  // 物価上昇率
-  inflationRate: number;
 };
 
 export type YearlyLifePlan = {
@@ -225,13 +222,10 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       : 0;
     const annualIncome = p1Income + p2Income;
 
-    // 物価上昇率の複利乗数
-    const inflationMultiplier = (1 + input.inflationRate / 100) ** yearOffset;
-
     // 年間生活費
     const annualLiving = anyoneWorking
-      ? input.monthlyLiving * 12 * inflationMultiplier
-      : input.retirementMonthlyExpense * 12 * inflationMultiplier;
+      ? input.monthlyLiving * 12
+      : input.retirementMonthlyExpense * 12;
 
     // ローン支払い（年間）
     let annualLoanPayment = 0;
@@ -289,9 +283,7 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     const childrenDetails: ChildEducationDetail[] = [];
     for (const child of input.children) {
       const childCurrentAge = child.age + yearOffset;
-      const cost =
-        getEducationCostForAge(childCurrentAge, child.plan) *
-        inflationMultiplier;
+      const cost = getEducationCostForAge(childCurrentAge, child.plan);
       annualEducation += cost;
 
       if (cost > 0) {
@@ -327,14 +319,15 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     const annualSavings = anyoneWorking ? input.monthlySavings * 12 : 0;
 
     // 資産残高の更新
-    // 収入 - 生活費 - ローン - 教育費 + 積立 を反映
+    // 収入 - 生活費 - ローン - 教育費 を反映
     const netCashFlow =
       annualIncome - annualLiving - annualLoanPayment - annualEducation;
 
-    // 運用益
-    balance = balance * (1 + input.annualReturn / 100);
-    // 現金フローを反映（積立は収入から出るので別計上しない）
+    // まず収支を反映し、残高がプラスなら運用益を適用
     balance += netCashFlow;
+    if (balance > 0) {
+      balance = balance * (1 + input.annualReturn / 100);
+    }
 
     if (age === input.person1.retirementAge) {
       balanceAtRetirement = Math.round(balance);

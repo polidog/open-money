@@ -103,7 +103,6 @@ type ModelCase = {
   monthlySavings: number;
   annualReturn: number;
   retirementMonthlyExpense: number;
-  inflationRate: number;
 };
 
 const modelCases: ModelCase[] = [
@@ -162,7 +161,6 @@ const modelCases: ModelCase[] = [
     monthlySavings: 5,
     annualReturn: 3.0,
     retirementMonthlyExpense: 25,
-    inflationRate: 1.0,
   },
   {
     name: "DINKS",
@@ -196,7 +194,6 @@ const modelCases: ModelCase[] = [
     monthlySavings: 10,
     annualReturn: 4.0,
     retirementMonthlyExpense: 28,
-    inflationRate: 1.0,
   },
   {
     name: "独身会社員",
@@ -230,7 +227,6 @@ const modelCases: ModelCase[] = [
     monthlySavings: 5,
     annualReturn: 3.0,
     retirementMonthlyExpense: 18,
-    inflationRate: 1.0,
   },
   {
     name: "片働き夫婦+子ども1人",
@@ -275,7 +271,6 @@ const modelCases: ModelCase[] = [
     monthlySavings: 5,
     annualReturn: 3.0,
     retirementMonthlyExpense: 22,
-    inflationRate: 1.0,
   },
   {
     name: "退職間近の夫婦",
@@ -309,7 +304,6 @@ const modelCases: ModelCase[] = [
     monthlySavings: 8,
     annualReturn: 2.0,
     retirementMonthlyExpense: 25,
-    inflationRate: 1.0,
   },
 ];
 
@@ -332,7 +326,6 @@ type ShareData = {
   ms: number;
   ar: number;
   re: number;
-  ir?: number;
 };
 
 function encodeShareData(d: ShareData): string {
@@ -514,14 +507,7 @@ export default function Home() {
   );
   const [retirementMonthlyExpense, setRetirementMonthlyExpense] =
     useLocalStorageState("lp_retirementExpense", 25);
-  const [inflationRate, setInflationRate] = useLocalStorageState(
-    "lp_inflationRate",
-    1.0,
-  );
-
   const [result, setResult] = useState<LifePlanResult | null>(null);
-  const [resultNoInflation, setResultNoInflation] =
-    useState<LifePlanResult | null>(null);
   const [minimumIncome, setMinimumIncome] =
     useState<MinimumIncomeResult | null>(null);
   const [hasPreviousSession, setHasPreviousSession] = useState(false);
@@ -555,7 +541,6 @@ export default function Home() {
         setMonthlySavings(data.ms);
         setAnnualReturn(data.ar);
         setRetirementMonthlyExpense(data.re);
-        setInflationRate(data.ir ?? 1.0);
         // Auto-run simulation after a tick
         setTimeout(() => {
           setStep(-2); // trigger auto-run
@@ -636,7 +621,6 @@ export default function Home() {
     setMonthlySavings(mc.monthlySavings);
     setAnnualReturn(mc.annualReturn);
     setRetirementMonthlyExpense(mc.retirementMonthlyExpense);
-    setInflationRate(mc.inflationRate);
     setStep(0);
   };
 
@@ -685,7 +669,6 @@ export default function Home() {
       ms: monthlySavings,
       ar: annualReturn,
       re: retirementMonthlyExpense,
-      ir: inflationRate,
     };
     const hash = encodeShareData(data);
     return `${window.location.origin}${window.location.pathname}#${hash}`;
@@ -742,16 +725,8 @@ export default function Home() {
       monthlySavings: toYen(monthlySavings),
       annualReturn,
       retirementMonthlyExpense: toYen(retirementMonthlyExpense),
-      inflationRate,
     };
     setResult(calculateLifePlan(input));
-    if (input.inflationRate > 0) {
-      setResultNoInflation(
-        calculateLifePlan({ ...input, inflationRate: 0 }),
-      );
-    } else {
-      setResultNoInflation(null);
-    }
     setMinimumIncome(calculateMinimumIncome(input));
     setStep(TOTAL_STEPS);
   };
@@ -1158,14 +1133,6 @@ export default function Home() {
               min={0}
               max={15}
             />
-            <NumberInput
-              label="物価上昇率（%）"
-              value={inflationRate}
-              onChange={setInflationRate}
-              step={0.1}
-              min={0}
-              max={10}
-            />
           </QuestionCard>
         );
 
@@ -1313,30 +1280,6 @@ export default function Home() {
                   : `${result.assetDepletionAge}歳で枯渇`}
               </p>
             </div>
-            {inflationRate > 0 && (
-              <div className="bg-white p-4 sm:p-8">
-                <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
-                  物価上昇率
-                </p>
-                <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
-                  年{inflationRate}%
-                </p>
-                {resultNoInflation && (
-                  <p className="mt-1 text-[10px] sm:text-xs text-neutral-500">
-                    インフレなし比較: 資産残高{" "}
-                    {fmtYenToMan(
-                      result.retirementBalance -
-                        resultNoInflation.retirementBalance,
-                    )}
-                    {result.retirementBalance -
-                      resultNoInflation.retirementBalance <=
-                    0
-                      ? ""
-                      : "増"}
-                  </p>
-                )}
-              </div>
-            )}
             {minimumIncome &&
               (() => {
                 const currentMonthlyYen =
@@ -1564,11 +1507,6 @@ export default function Home() {
                       <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         資産残高
                       </th>
-                      {resultNoInflation && (
-                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
-                          インフレ影響
-                        </th>
-                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -1610,23 +1548,6 @@ export default function Home() {
                         >
                           {fmtYenToMan(row.balance)}
                         </td>
-                        {resultNoInflation && (() => {
-                          const noInflRow = resultNoInflation.schedule.find(
-                            (r) => r.age === row.age,
-                          );
-                          const diff = noInflRow
-                            ? row.balance - noInflRow.balance
-                            : 0;
-                          return (
-                            <td
-                              className={`px-2 py-2 sm:px-4 sm:py-3 text-right text-xs ${diff < 0 ? "text-red-500" : "text-neutral-400"}`}
-                            >
-                              {diff === 0
-                                ? "-"
-                                : `${diff > 0 ? "+" : ""}${fmtYenToMan(diff)}`}
-                            </td>
-                          );
-                        })()}
                       </tr>
                     ))}
                   </tbody>

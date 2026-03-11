@@ -46,8 +46,12 @@ export default function LoanTable({ schedule }: Props) {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium tracking-tight text-neutral-900">返済スケジュール</h3>
-          <p className="mt-1 text-xs uppercase tracking-widest text-neutral-400">Repayment Schedule</p>
+          <h3 className="text-lg font-medium tracking-tight text-neutral-900">
+            返済スケジュール
+          </h3>
+          <p className="mt-1 text-xs uppercase tracking-widest text-neutral-400">
+            Repayment Schedule
+          </p>
         </div>
         <div className="flex">
           <button
@@ -82,14 +86,26 @@ export default function LoanTable({ schedule }: Props) {
               <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">
                 {viewMode === "monthly" ? "月" : "年"}
               </th>
-              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">年齢</th>
-              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">支払額</th>
-              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">元金</th>
-              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">利息</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                年齢
+              </th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                支払額
+              </th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                元金
+              </th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                利息
+              </th>
               {hasPrepayments && (
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">繰り上げ</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                  繰り上げ
+                </th>
               )}
-              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">残高</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                残高
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -103,15 +119,23 @@ export default function LoanTable({ schedule }: Props) {
                   >
                     <td className="px-4 py-3 text-neutral-600">{row.month}</td>
                     <td className="px-4 py-3 text-neutral-600">{row.age}歳</td>
-                    <td className="px-4 py-3 text-right text-neutral-900">{formatYen(row.payment)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-600">{formatYen(row.principal)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-400">{formatYen(row.interest)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-900">
+                      {formatYen(row.payment)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-600">
+                      {formatYen(row.principal)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-400">
+                      {formatYen(row.interest)}
+                    </td>
                     {hasPrepayments && (
                       <td className="px-4 py-3 text-right font-medium text-neutral-900">
                         {row.prepayment > 0 ? formatYen(row.prepayment) : "-"}
                       </td>
                     )}
-                    <td className="px-4 py-3 text-right font-medium text-neutral-900">{formatYen(row.remainingBalance)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-neutral-900">
+                      {formatYen(row.remainingBalance)}
+                    </td>
                   </tr>
                 ))
               : yearlyRows.map((row) => (
@@ -121,17 +145,29 @@ export default function LoanTable({ schedule }: Props) {
                       row.totalPrepayment > 0 ? "bg-neutral-50" : ""
                     }`}
                   >
-                    <td className="px-4 py-3 text-neutral-600">{row.year}年目</td>
+                    <td className="px-4 py-3 text-neutral-600">
+                      {row.year}年目
+                    </td>
                     <td className="px-4 py-3 text-neutral-600">{row.age}歳</td>
-                    <td className="px-4 py-3 text-right text-neutral-900">{formatYen(row.totalPayment)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-600">{formatYen(row.totalPrincipal)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-400">{formatYen(row.totalInterest)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-900">
+                      {formatYen(row.totalPayment)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-600">
+                      {formatYen(row.totalPrincipal)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-400">
+                      {formatYen(row.totalInterest)}
+                    </td>
                     {hasPrepayments && (
                       <td className="px-4 py-3 text-right font-medium text-neutral-900">
-                        {row.totalPrepayment > 0 ? formatYen(row.totalPrepayment) : "-"}
+                        {row.totalPrepayment > 0
+                          ? formatYen(row.totalPrepayment)
+                          : "-"}
                       </td>
                     )}
-                    <td className="px-4 py-3 text-right font-medium text-neutral-900">{formatYen(row.remainingBalance)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-neutral-900">
+                      {formatYen(row.remainingBalance)}
+                    </td>
                   </tr>
                 ))}
           </tbody>
