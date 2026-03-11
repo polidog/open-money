@@ -1,5 +1,10 @@
 import type { EducationPlan } from "./education";
-import { type LoanResult, type Prepayment, type RepaymentMethod, calculateLoan } from "./loan";
+import {
+  type LoanResult,
+  type Prepayment,
+  type RepaymentMethod,
+  calculateLoan,
+} from "./loan";
 
 export type Child = {
   name: string;
@@ -38,6 +43,9 @@ export type LifePlanInput = {
   monthlySavings: number;
   annualReturn: number;
   retirementMonthlyExpense: number;
+
+  // 物価上昇率
+  inflationRate: number;
 };
 
 export type YearlyLifePlan = {
@@ -88,11 +96,16 @@ const TYPE_LABELS: Record<string, string> = {
 function getEducationStageForAge(
   childAge: number,
 ): { stageKey: string; label: string } | null {
-  if (childAge >= 3 && childAge <= 5) return { stageKey: "kindergarten", label: STAGE_LABELS.kindergarten };
-  if (childAge >= 6 && childAge <= 11) return { stageKey: "elementary", label: STAGE_LABELS.elementary };
-  if (childAge >= 12 && childAge <= 14) return { stageKey: "juniorHigh", label: STAGE_LABELS.juniorHigh };
-  if (childAge >= 15 && childAge <= 17) return { stageKey: "highSchool", label: STAGE_LABELS.highSchool };
-  if (childAge >= 18 && childAge <= 21) return { stageKey: "university", label: STAGE_LABELS.university };
+  if (childAge >= 3 && childAge <= 5)
+    return { stageKey: "kindergarten", label: STAGE_LABELS.kindergarten };
+  if (childAge >= 6 && childAge <= 11)
+    return { stageKey: "elementary", label: STAGE_LABELS.elementary };
+  if (childAge >= 12 && childAge <= 14)
+    return { stageKey: "juniorHigh", label: STAGE_LABELS.juniorHigh };
+  if (childAge >= 15 && childAge <= 17)
+    return { stageKey: "highSchool", label: STAGE_LABELS.highSchool };
+  if (childAge >= 18 && childAge <= 21)
+    return { stageKey: "university", label: STAGE_LABELS.university };
   return null;
 }
 
@@ -141,7 +154,11 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
   const loanElapsedYears = Math.max(0, input.person1.age - input.loanStartAge);
   const loanElapsedMonths = loanElapsedYears * 12;
 
-  if (input.hasLoan && input.loanAmount > 0 && loanElapsedYears < input.loanYears) {
+  if (
+    input.hasLoan &&
+    input.loanAmount > 0 &&
+    loanElapsedYears < input.loanYears
+  ) {
     loanRemaining = input.loanAmount;
     if (input.loanMethod === "equal_principal") {
       loanMonthlyPrincipal = input.loanAmount / loanTotalMonths;
@@ -202,16 +219,19 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       ? input.person1.monthlyIncome * 12
       : input.person1.pensionMonthly * 12;
     const p2Income = input.hasPartner
-      ? (p2Working
-          ? input.person2.monthlyIncome * 12
-          : input.person2.pensionMonthly * 12)
+      ? p2Working
+        ? input.person2.monthlyIncome * 12
+        : input.person2.pensionMonthly * 12
       : 0;
     const annualIncome = p1Income + p2Income;
 
+    // 物価上昇率の複利乗数
+    const inflationMultiplier = (1 + input.inflationRate / 100) ** yearOffset;
+
     // 年間生活費
     const annualLiving = anyoneWorking
-      ? input.monthlyLiving * 12
-      : input.retirementMonthlyExpense * 12;
+      ? input.monthlyLiving * 12 * inflationMultiplier
+      : input.retirementMonthlyExpense * 12 * inflationMultiplier;
 
     // ローン支払い（年間）
     let annualLoanPayment = 0;
@@ -269,7 +289,9 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     const childrenDetails: ChildEducationDetail[] = [];
     for (const child of input.children) {
       const childCurrentAge = child.age + yearOffset;
-      const cost = getEducationCostForAge(childCurrentAge, child.plan);
+      const cost =
+        getEducationCostForAge(childCurrentAge, child.plan) *
+        inflationMultiplier;
       annualEducation += cost;
 
       if (cost > 0) {
@@ -338,10 +360,12 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
 
   const educationSummary: EducationSummary = {
     yearlyDetails: educationYearlyDetails,
-    perChildTotal: Array.from(perChildTotals.entries()).map(([name, total]) => ({
-      name,
-      total,
-    })),
+    perChildTotal: Array.from(perChildTotals.entries()).map(
+      ([name, total]) => ({
+        name,
+        total,
+      }),
+    ),
     grandTotal: Math.round(totalEducationCost),
   };
 
