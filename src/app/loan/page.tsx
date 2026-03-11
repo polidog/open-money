@@ -13,12 +13,21 @@ import LoanCharts from "../components/LoanCharts";
 import LoanTable from "../components/LoanTable";
 
 export default function Home() {
-  const [loanAmount, setLoanAmount] = useLocalStorageState("loan_amount", 35000000);
+  const [loanAmount, setLoanAmount] = useLocalStorageState(
+    "loan_amount",
+    35000000,
+  );
   const [annualRate, setAnnualRate] = useLocalStorageState("loan_rate", 1.5);
   const [years, setYears] = useLocalStorageState("loan_years", 35);
   const [age, setAge] = useLocalStorageState("loan_age", 30);
-  const [method, setMethod] = useLocalStorageState<RepaymentMethod>("loan_method", "equal_installment");
-  const [prepayments, setPrepayments] = useLocalStorageState<Prepayment[]>("loan_prepayments", []);
+  const [method, setMethod] = useLocalStorageState<RepaymentMethod>(
+    "loan_method",
+    "equal_installment",
+  );
+  const [prepayments, setPrepayments] = useLocalStorageState<Prepayment[]>(
+    "loan_prepayments",
+    [],
+  );
   const [result, setResult] = useState<LoanResult | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +56,11 @@ export default function Home() {
     setPrepayments(prepayments.filter((_, i) => i !== index));
   };
 
-  const updatePrepayment = (index: number, field: keyof Prepayment, value: string | number) => {
+  const updatePrepayment = (
+    index: number,
+    field: keyof Prepayment,
+    value: string | number,
+  ) => {
     const updated = [...prepayments];
     if (field === "type") {
       updated[index] = { ...updated[index], type: value as Prepayment["type"] };
@@ -148,9 +161,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-6">
-            <p className="mb-2 text-sm font-medium text-gray-700">
-              返済方式
-            </p>
+            <p className="mb-2 text-sm font-medium text-gray-700">返済方式</p>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 text-sm text-black cursor-pointer">
                 <input
@@ -191,7 +202,7 @@ export default function Home() {
               <div className="space-y-3">
                 {prepayments.map((p, i) => (
                   <div
-                    key={`prepayment-${i}-${p.yearFromStart}`}
+                    key={`prepayment-${i}`}
                     className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
                   >
                     <div>
