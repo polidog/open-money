@@ -689,7 +689,7 @@ export default function Home() {
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <h1 className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-900">OpenMoney</h1>
+            <h1 className="text-2xl font-bold uppercase tracking-[0.2em] text-neutral-900 cursor-pointer" onClick={() => { window.location.hash = ""; setStep(-1); setResult(null); }}>OpenMoney</h1>
             <div className="flex items-center gap-4">
               <button type="button" onClick={handleShare} className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors">
                 {copied ? "Copied!" : "Share"}
