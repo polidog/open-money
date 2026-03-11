@@ -520,6 +520,8 @@ export default function Home() {
   );
 
   const [result, setResult] = useState<LifePlanResult | null>(null);
+  const [resultNoInflation, setResultNoInflation] =
+    useState<LifePlanResult | null>(null);
   const [minimumIncome, setMinimumIncome] =
     useState<MinimumIncomeResult | null>(null);
   const [hasPreviousSession, setHasPreviousSession] = useState(false);
@@ -743,6 +745,13 @@ export default function Home() {
       inflationRate,
     };
     setResult(calculateLifePlan(input));
+    if (input.inflationRate > 0) {
+      setResultNoInflation(
+        calculateLifePlan({ ...input, inflationRate: 0 }),
+      );
+    } else {
+      setResultNoInflation(null);
+    }
     setMinimumIncome(calculateMinimumIncome(input));
     setStep(TOTAL_STEPS);
   };
@@ -1304,6 +1313,30 @@ export default function Home() {
                   : `${result.assetDepletionAge}歳で枯渇`}
               </p>
             </div>
+            {inflationRate > 0 && (
+              <div className="bg-white p-8">
+                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+                  物価上昇率
+                </p>
+                <p className="text-2xl font-medium tracking-tight text-neutral-900">
+                  年{inflationRate}%
+                </p>
+                {resultNoInflation && (
+                  <p className="mt-1 text-xs text-neutral-500">
+                    インフレなし比較: 資産残高{" "}
+                    {fmtYenToMan(
+                      result.retirementBalance -
+                        resultNoInflation.retirementBalance,
+                    )}
+                    {result.retirementBalance -
+                      resultNoInflation.retirementBalance <=
+                    0
+                      ? ""
+                      : "増"}
+                  </p>
+                )}
+              </div>
+            )}
             {minimumIncome &&
               (() => {
                 const currentMonthlyYen =
@@ -1531,6 +1564,11 @@ export default function Home() {
                       <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         資産残高
                       </th>
+                      {resultNoInflation && (
+                        <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                          インフレ影響
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -1572,6 +1610,23 @@ export default function Home() {
                         >
                           {fmtYenToMan(row.balance)}
                         </td>
+                        {resultNoInflation && (() => {
+                          const noInflRow = resultNoInflation.schedule.find(
+                            (r) => r.age === row.age,
+                          );
+                          const diff = noInflRow
+                            ? row.balance - noInflRow.balance
+                            : 0;
+                          return (
+                            <td
+                              className={`px-4 py-3 text-right text-xs ${diff < 0 ? "text-red-500" : "text-neutral-400"}`}
+                            >
+                              {diff === 0
+                                ? "-"
+                                : `${diff > 0 ? "+" : ""}${fmtYenToMan(diff)}`}
+                            </td>
+                          );
+                        })()}
                       </tr>
                     ))}
                   </tbody>
