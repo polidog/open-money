@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenMoney - 住宅ローンシミュレーター",
-  description: "住宅ローンの返済シミュレーション",
+  title: "OpenMoney - ライフプランシミュレーター",
+  description: "あなたのライフプランを総合的にシミュレーション",
 };
 
 export default function RootLayout({

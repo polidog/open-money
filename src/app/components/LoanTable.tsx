@@ -43,17 +43,20 @@ export default function LoanTable({ schedule }: Props) {
   }
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-md">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-800">返済スケジュール</h2>
-        <div className="flex gap-2">
+    <div>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-medium tracking-tight text-neutral-900">返済スケジュール</h3>
+          <p className="mt-1 text-xs uppercase tracking-widest text-neutral-400">Repayment Schedule</p>
+        </div>
+        <div className="flex">
           <button
             type="button"
             onClick={() => setViewMode("yearly")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+            className={`px-5 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
               viewMode === "yearly"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-neutral-900 text-white"
+                : "bg-white text-neutral-400 hover:text-neutral-900"
             }`}
           >
             年単位
@@ -61,10 +64,10 @@ export default function LoanTable({ schedule }: Props) {
           <button
             type="button"
             onClick={() => setViewMode("monthly")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+            className={`px-5 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
               viewMode === "monthly"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-neutral-900 text-white"
+                : "bg-white text-neutral-400 hover:text-neutral-900"
             }`}
           >
             月単位
@@ -73,20 +76,20 @@ export default function LoanTable({ schedule }: Props) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-black">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-gray-200 text-left text-black">
-              <th className="px-3 py-2">
+            <tr className="border-b border-neutral-900 text-left">
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">
                 {viewMode === "monthly" ? "月" : "年"}
               </th>
-              <th className="px-3 py-2">年齢</th>
-              <th className="px-3 py-2 text-right">支払額</th>
-              <th className="px-3 py-2 text-right">元金</th>
-              <th className="px-3 py-2 text-right">利息</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400">年齢</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">支払額</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">元金</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">利息</th>
               {hasPrepayments && (
-                <th className="px-3 py-2 text-right">繰り上げ</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">繰り上げ</th>
               )}
-              <th className="px-3 py-2 text-right">残高</th>
+              <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">残高</th>
             </tr>
           </thead>
           <tbody>
@@ -94,59 +97,41 @@ export default function LoanTable({ schedule }: Props) {
               ? schedule.map((row) => (
                   <tr
                     key={row.month}
-                    className={`border-b border-gray-100 hover:bg-gray-50 ${
-                      row.prepayment > 0 ? "bg-green-50" : ""
+                    className={`border-b border-neutral-100 hover:bg-neutral-50 transition-colors ${
+                      row.prepayment > 0 ? "bg-neutral-50" : ""
                     }`}
                   >
-                    <td className="px-3 py-2">{row.month}</td>
-                    <td className="px-3 py-2">{row.age}歳</td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.payment)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.principal)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.interest)}
-                    </td>
+                    <td className="px-4 py-3 text-neutral-600">{row.month}</td>
+                    <td className="px-4 py-3 text-neutral-600">{row.age}歳</td>
+                    <td className="px-4 py-3 text-right text-neutral-900">{formatYen(row.payment)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-600">{formatYen(row.principal)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-400">{formatYen(row.interest)}</td>
                     {hasPrepayments && (
-                      <td className="px-3 py-2 text-right text-green-600 font-medium">
+                      <td className="px-4 py-3 text-right font-medium text-neutral-900">
                         {row.prepayment > 0 ? formatYen(row.prepayment) : "-"}
                       </td>
                     )}
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.remainingBalance)}
-                    </td>
+                    <td className="px-4 py-3 text-right font-medium text-neutral-900">{formatYen(row.remainingBalance)}</td>
                   </tr>
                 ))
               : yearlyRows.map((row) => (
                   <tr
                     key={row.year}
-                    className={`border-b border-gray-100 hover:bg-gray-50 ${
-                      row.totalPrepayment > 0 ? "bg-green-50" : ""
+                    className={`border-b border-neutral-100 hover:bg-neutral-50 transition-colors ${
+                      row.totalPrepayment > 0 ? "bg-neutral-50" : ""
                     }`}
                   >
-                    <td className="px-3 py-2">{row.year}年目</td>
-                    <td className="px-3 py-2">{row.age}歳</td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.totalPayment)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.totalPrincipal)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.totalInterest)}
-                    </td>
+                    <td className="px-4 py-3 text-neutral-600">{row.year}年目</td>
+                    <td className="px-4 py-3 text-neutral-600">{row.age}歳</td>
+                    <td className="px-4 py-3 text-right text-neutral-900">{formatYen(row.totalPayment)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-600">{formatYen(row.totalPrincipal)}</td>
+                    <td className="px-4 py-3 text-right text-neutral-400">{formatYen(row.totalInterest)}</td>
                     {hasPrepayments && (
-                      <td className="px-3 py-2 text-right text-green-600 font-medium">
-                        {row.totalPrepayment > 0
-                          ? formatYen(row.totalPrepayment)
-                          : "-"}
+                      <td className="px-4 py-3 text-right font-medium text-neutral-900">
+                        {row.totalPrepayment > 0 ? formatYen(row.totalPrepayment) : "-"}
                       </td>
                     )}
-                    <td className="px-3 py-2 text-right">
-                      {formatYen(row.remainingBalance)}
-                    </td>
+                    <td className="px-4 py-3 text-right font-medium text-neutral-900">{formatYen(row.remainingBalance)}</td>
                   </tr>
                 ))}
           </tbody>

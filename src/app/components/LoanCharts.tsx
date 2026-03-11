@@ -36,7 +36,7 @@ export default function LoanCharts({ result }: Props) {
     const totalInterest = monthsInYear.reduce((sum, m) => sum + m.interest, 0);
     const lastMonth = monthsInYear[monthsInYear.length - 1];
     yearlyData.push({
-      label: `${lastMonth.age}歳`,
+      label: `${lastMonth.age}`,
       principal: Math.round(totalPrincipal),
       interest: Math.round(totalInterest),
       remainingBalance: lastMonth.remainingBalance,
@@ -50,56 +50,83 @@ export default function LoanCharts({ result }: Props) {
     return value.toLocaleString();
   };
 
+  const tooltipStyle = {
+    border: "1px solid #e5e5e5",
+    borderRadius: 0,
+    fontSize: 12,
+    boxShadow: "none",
+  };
+
   return (
-    <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-      <div className="rounded-xl bg-white p-6 shadow-md">
-        <h2 className="mb-4 text-lg font-bold text-gray-800">
-          年間支払い内訳（元金・利息）
-        </h2>
+    <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
+      <div>
+        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">年間支払い内訳</h3>
+        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">Principal & Interest</p>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={yearlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="label" fontSize={12} />
-            <YAxis tickFormatter={formatYen} fontSize={12} />
+            <CartesianGrid stroke="#f5f5f5" strokeDasharray="none" />
+            <XAxis
+              dataKey="label"
+              fontSize={11}
+              stroke="#a3a3a3"
+              tickLine={false}
+              axisLine={{ stroke: "#e5e5e5" }}
+            />
+            <YAxis
+              tickFormatter={formatYen}
+              fontSize={11}
+              stroke="#a3a3a3"
+              tickLine={false}
+              axisLine={false}
+            />
             <Tooltip
-              formatter={(value) => `${Number(value).toLocaleString()}円`}
+              formatter={(value, name) => [`${Number(value).toLocaleString()}円`, name]}
+              labelFormatter={(label) => `${label}歳`}
+              contentStyle={tooltipStyle}
             />
-            <Legend />
-            <Bar
-              dataKey="principal"
-              name="元金"
-              stackId="a"
-              fill="#3b82f6"
+            <Legend
+              iconType="square"
+              iconSize={8}
+              wrapperStyle={{ fontSize: 11, color: "#737373" }}
             />
-            <Bar
-              dataKey="interest"
-              name="利息"
-              stackId="a"
-              fill="#ef4444"
-            />
+            <Bar dataKey="principal" name="元金" stackId="a" fill="#0a0a0a" />
+            <Bar dataKey="interest" name="利息" stackId="a" fill="#d4d4d4" />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-xl bg-white p-6 shadow-md">
-        <h2 className="mb-4 text-lg font-bold text-gray-800">
-          ローン残高の推移
-        </h2>
+      <div>
+        <h3 className="mb-2 text-lg font-medium tracking-tight text-neutral-900">ローン残高の推移</h3>
+        <p className="mb-8 text-xs uppercase tracking-widest text-neutral-400">Remaining Balance</p>
         <ResponsiveContainer width="100%" height={350}>
           <AreaChart data={yearlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="label" fontSize={12} />
-            <YAxis tickFormatter={formatYen} fontSize={12} />
-            <Tooltip
-              formatter={(value) => `${Number(value).toLocaleString()}円`}
+            <CartesianGrid stroke="#f5f5f5" strokeDasharray="none" />
+            <XAxis
+              dataKey="label"
+              fontSize={11}
+              stroke="#a3a3a3"
+              tickLine={false}
+              axisLine={{ stroke: "#e5e5e5" }}
             />
-            <Legend />
+            <YAxis
+              tickFormatter={formatYen}
+              fontSize={11}
+              stroke="#a3a3a3"
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              formatter={(value) => [`${Number(value).toLocaleString()}円`, "残高"]}
+              labelFormatter={(label) => `${label}歳`}
+              contentStyle={tooltipStyle}
+            />
             <Area
               type="monotone"
               dataKey="remainingBalance"
               name="残高"
-              stroke="#8b5cf6"
-              fill="#c4b5fd"
+              stroke="#0a0a0a"
+              fill="#f5f5f5"
+              strokeWidth={1.5}
             />
           </AreaChart>
         </ResponsiveContainer>
