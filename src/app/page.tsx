@@ -37,8 +37,155 @@ const schoolOptions: {
 
 const TOTAL_STEPS = 7;
 
+type ModelCase = {
+  name: string;
+  description: string;
+  icon: string;
+  person1: Person;
+  hasPartner: boolean;
+  person2: Person;
+  lifeExpectancy: number;
+  monthlyLiving: number;
+  hasLoan: boolean;
+  loanAmount: number;
+  loanRate: number;
+  loanYears: number;
+  loanStartAge: number;
+  loanMethod: RepaymentMethod;
+  loanPrepayments: { yearFromStart: number; amount: number; type: "shorten" | "reduce" }[];
+  hasChildren: boolean;
+  children: Child[];
+  currentSavings: number;
+  monthlySavings: number;
+  annualReturn: number;
+  retirementMonthlyExpense: number;
+};
+
+const modelCases: ModelCase[] = [
+  {
+    name: "共働き夫婦+子ども2人",
+    description: "30代共働き夫婦。子ども2人（小学生・幼児）、住宅ローンあり。典型的なファミリー世帯。",
+    icon: "👨‍👩‍👧‍👦",
+    person1: { age: 35, retirementAge: 65, monthlyIncome: 30, pensionMonthly: 15 },
+    hasPartner: true,
+    person2: { age: 33, retirementAge: 65, monthlyIncome: 20, pensionMonthly: 10 },
+    lifeExpectancy: 90,
+    monthlyLiving: 28,
+    hasLoan: true,
+    loanAmount: 4500,
+    loanRate: 1.2,
+    loanYears: 35,
+    loanStartAge: 33,
+    loanMethod: "equal_installment",
+    loanPrepayments: [],
+    hasChildren: true,
+    children: [
+      { name: "第1子", age: 7, plan: { kindergarten: "public", elementary: "public", juniorHigh: "public", highSchool: "public", university: "public" } },
+      { name: "第2子", age: 3, plan: { kindergarten: "public", elementary: "public", juniorHigh: "public", highSchool: "public", university: "private_arts" } },
+    ],
+    currentSavings: 500,
+    monthlySavings: 5,
+    annualReturn: 3.0,
+    retirementMonthlyExpense: 25,
+  },
+  {
+    name: "DINKS（共働き子なし）",
+    description: "30代共働き夫婦。子どもなし。収入に余裕があり、積極的に資産運用。",
+    icon: "👫",
+    person1: { age: 32, retirementAge: 65, monthlyIncome: 35, pensionMonthly: 16 },
+    hasPartner: true,
+    person2: { age: 30, retirementAge: 65, monthlyIncome: 30, pensionMonthly: 13 },
+    lifeExpectancy: 90,
+    monthlyLiving: 25,
+    hasLoan: true,
+    loanAmount: 5000,
+    loanRate: 1.0,
+    loanYears: 35,
+    loanStartAge: 32,
+    loanMethod: "equal_installment",
+    loanPrepayments: [{ yearFromStart: 10, amount: 500, type: "shorten" }],
+    hasChildren: false,
+    children: [],
+    currentSavings: 800,
+    monthlySavings: 10,
+    annualReturn: 4.0,
+    retirementMonthlyExpense: 28,
+  },
+  {
+    name: "独身会社員",
+    description: "30歳独身。マンション購入済み。堅実に貯蓄しながら老後に備える。",
+    icon: "🧑‍💼",
+    person1: { age: 30, retirementAge: 65, monthlyIncome: 28, pensionMonthly: 14 },
+    hasPartner: false,
+    person2: { age: 28, retirementAge: 65, monthlyIncome: 0, pensionMonthly: 0 },
+    lifeExpectancy: 90,
+    monthlyLiving: 15,
+    hasLoan: true,
+    loanAmount: 3000,
+    loanRate: 1.5,
+    loanYears: 35,
+    loanStartAge: 30,
+    loanMethod: "equal_installment",
+    loanPrepayments: [],
+    hasChildren: false,
+    children: [],
+    currentSavings: 400,
+    monthlySavings: 5,
+    annualReturn: 3.0,
+    retirementMonthlyExpense: 18,
+  },
+  {
+    name: "片働き夫婦+子ども1人",
+    description: "40代片働き世帯。子ども1人（中学生）。教育費のピークに備える。",
+    icon: "👨‍👩‍👧",
+    person1: { age: 42, retirementAge: 65, monthlyIncome: 40, pensionMonthly: 18 },
+    hasPartner: true,
+    person2: { age: 40, retirementAge: 65, monthlyIncome: 0, pensionMonthly: 6 },
+    lifeExpectancy: 90,
+    monthlyLiving: 25,
+    hasLoan: true,
+    loanAmount: 4000,
+    loanRate: 1.3,
+    loanYears: 35,
+    loanStartAge: 35,
+    loanMethod: "equal_installment",
+    loanPrepayments: [],
+    hasChildren: true,
+    children: [
+      { name: "子ども", age: 13, plan: { kindergarten: "public", elementary: "public", juniorHigh: "public", highSchool: "private", university: "private_science" } },
+    ],
+    currentSavings: 1000,
+    monthlySavings: 5,
+    annualReturn: 3.0,
+    retirementMonthlyExpense: 22,
+  },
+  {
+    name: "退職間近の夫婦",
+    description: "55歳夫婦。子どもは独立済み。ローン残りわずか。老後資金の最終確認。",
+    icon: "👴👵",
+    person1: { age: 55, retirementAge: 65, monthlyIncome: 45, pensionMonthly: 18 },
+    hasPartner: true,
+    person2: { age: 53, retirementAge: 60, monthlyIncome: 15, pensionMonthly: 8 },
+    lifeExpectancy: 90,
+    monthlyLiving: 30,
+    hasLoan: true,
+    loanAmount: 3500,
+    loanRate: 1.8,
+    loanYears: 30,
+    loanStartAge: 35,
+    loanMethod: "equal_installment",
+    loanPrepayments: [],
+    hasChildren: false,
+    children: [],
+    currentSavings: 2500,
+    monthlySavings: 8,
+    annualReturn: 2.0,
+    retirementMonthlyExpense: 25,
+  },
+];
+
 export default function Home() {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
 
   // 基本情報（金額は万円単位で管理）
   const [person1, setPerson1] = useLocalStorageState<Person>("lp_person1", {
@@ -95,6 +242,28 @@ export default function Home() {
     const updated = [...children];
     updated[i] = { ...updated[i], plan: { ...updated[i].plan, [key]: value } };
     setChildren(updated);
+  };
+
+  const applyModelCase = (mc: ModelCase) => {
+    setPerson1(mc.person1);
+    setHasPartner(mc.hasPartner);
+    setPerson2(mc.person2);
+    setLifeExpectancy(mc.lifeExpectancy);
+    setMonthlyLiving(mc.monthlyLiving);
+    setHasLoan(mc.hasLoan);
+    setLoanAmount(mc.loanAmount);
+    setLoanRate(mc.loanRate);
+    setLoanYears(mc.loanYears);
+    setLoanStartAge(mc.loanStartAge);
+    setLoanMethod(mc.loanMethod);
+    setLoanPrepayments(mc.loanPrepayments);
+    setHasChildren(mc.hasChildren);
+    setChildren(mc.children);
+    setCurrentSavings(mc.currentSavings);
+    setMonthlySavings(mc.monthlySavings);
+    setAnnualReturn(mc.annualReturn);
+    setRetirementMonthlyExpense(mc.retirementMonthlyExpense);
+    setStep(0);
   };
 
   const addPrepayment = () => setLoanPrepayments([...loanPrepayments, { yearFromStart: 5, amount: 100, type: "shorten" }]);
@@ -166,7 +335,9 @@ export default function Home() {
       setStep(TOTAL_STEPS - 1);
       return;
     }
-    if (step === 2 && !hasPartner) {
+    if (step === 0) {
+      setStep(-1);
+    } else if (step === 2 && !hasPartner) {
       setStep(0);
     } else if (step === 5 && !hasChildren) {
       setStep(3);
@@ -217,7 +388,7 @@ export default function Home() {
     </div>
   );
 
-  const progress = step < TOTAL_STEPS ? Math.round((step / TOTAL_STEPS) * 100) : 100;
+  const progress = step < 0 ? 0 : step < TOTAL_STEPS ? Math.round((step / TOTAL_STEPS) * 100) : 100;
 
   const renderStep = () => {
     switch (step) {
@@ -574,6 +745,52 @@ export default function Home() {
     );
   }
 
+  // モデルケース選択画面
+  if (step === -1) {
+    return (
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <div className="flex-1 py-8 px-4">
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold text-gray-800">OpenMoney</h1>
+            <p className="mt-2 text-sm text-gray-500">ライフプランシミュレーター</p>
+          </div>
+
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-bold text-gray-800">モデルケースから始める</h2>
+              <p className="mt-2 text-sm text-gray-500">あなたに近いケースを選ぶと、入力値があらかじめセットされます</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {modelCases.map((mc) => (
+                <button
+                  key={mc.name}
+                  type="button"
+                  onClick={() => applyModelCase(mc)}
+                  className="rounded-2xl bg-white p-6 shadow-md text-left transition hover:shadow-lg hover:ring-2 hover:ring-blue-300"
+                >
+                  <div className="mb-3 text-3xl">{mc.icon}</div>
+                  <h3 className="mb-2 text-lg font-bold text-gray-800">{mc.name}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{mc.description}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                onClick={() => setStep(0)}
+                className={btnSecondary}
+              >
+                モデルケースを使わずに始める
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 質問画面
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
@@ -598,9 +815,9 @@ export default function Home() {
 
         {/* ナビゲーションボタン */}
         <div className="mx-auto mt-8 flex w-full max-w-2xl justify-between">
-          {step > 0 ? (
-            <button type="button" onClick={prev} className={btnSecondary}>戻る</button>
-          ) : <div />}
+          <button type="button" onClick={prev} className={btnSecondary}>
+            {step === 0 ? "モデルケースに戻る" : "戻る"}
+          </button>
           <button type="button" onClick={next} className={btnPrimary}>
             {step === TOTAL_STEPS - 1 ? "結果を見る" : "次へ"}
           </button>
