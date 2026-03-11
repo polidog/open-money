@@ -11,8 +11,10 @@ export function calculateMinimumIncome(
   baseInput: LifePlanInput,
 ): MinimumIncomeResult {
   // person1/person2 の収入比率を算出
-  const totalIncome =
-    baseInput.person1.monthlyIncome + baseInput.person2.monthlyIncome;
+  // hasPartner=false の場合は person1 のみなので ratio=1
+  const totalIncome = baseInput.hasPartner
+    ? baseInput.person1.monthlyIncome + baseInput.person2.monthlyIncome
+    : baseInput.person1.monthlyIncome;
   const ratio =
     totalIncome > 0 ? baseInput.person1.monthlyIncome / totalIncome : 1;
 
