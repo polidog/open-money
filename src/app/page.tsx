@@ -8,7 +8,10 @@ import {
   calcInitialMonthlyPayment,
 } from "./lib/loan";
 import {
+  type CarLoan,
   type Child,
+  type FixedCostItem,
+  type HousingType,
   type LifePlanInput,
   type LifePlanResult,
   type Person,
@@ -80,7 +83,7 @@ const schoolOptions: {
   },
 ];
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 type ModelCase = {
   name: string;
@@ -90,6 +93,7 @@ type ModelCase = {
   person2: Person;
   lifeExpectancy: number;
   monthlyLiving: number;
+  housingType: HousingType;
   hasLoan: boolean;
   loanAmount: number;
   loanRate: number;
@@ -101,6 +105,9 @@ type ModelCase = {
     amount: number;
     type: "shorten" | "reduce";
   }[];
+  monthlyRent: number;
+  fixedCosts: { name: string; annualAmount: number }[];
+  carLoans: { startAge: number; amount: number; rate: number; years: number }[];
   hasChildren: boolean;
   children: Child[];
   currentSavings: number;
@@ -129,6 +136,7 @@ const modelCases: ModelCase[] = [
     },
     lifeExpectancy: 90,
     monthlyLiving: 28,
+    housingType: "own",
     hasLoan: true,
     loanAmount: 4500,
     loanRate: 1.2,
@@ -136,6 +144,14 @@ const modelCases: ModelCase[] = [
     loanStartAge: 33,
     loanMethod: "equal_installment",
     loanPrepayments: [],
+    monthlyRent: 0,
+    fixedCosts: [
+      { name: "固定資産税", annualAmount: 12 },
+      { name: "火災保険", annualAmount: 2 },
+      { name: "修繕積立金", annualAmount: 12 },
+      { name: "自動車維持費", annualAmount: 40 },
+    ],
+    carLoans: [{ startAge: 35, amount: 300, rate: 2.5, years: 5 }],
     hasChildren: true,
     children: [
       {
@@ -185,6 +201,7 @@ const modelCases: ModelCase[] = [
     },
     lifeExpectancy: 90,
     monthlyLiving: 25,
+    housingType: "own",
     hasLoan: true,
     loanAmount: 5000,
     loanRate: 1.0,
@@ -192,6 +209,12 @@ const modelCases: ModelCase[] = [
     loanStartAge: 32,
     loanMethod: "equal_installment",
     loanPrepayments: [{ yearFromStart: 10, amount: 500, type: "shorten" }],
+    monthlyRent: 0,
+    fixedCosts: [
+      { name: "固定資産税", annualAmount: 15 },
+      { name: "火災保険", annualAmount: 2 },
+    ],
+    carLoans: [],
     hasChildren: false,
     children: [],
     currentSavings: 800,
@@ -200,7 +223,7 @@ const modelCases: ModelCase[] = [
     retirementMonthlyExpense: 28,
   },
   {
-    name: "独身会社員",
+    name: "独身会社員（持ち家）",
     description:
       "30歳独身。マンション購入済み。堅実に貯蓄しながら老後に備える。",
     person1: {
@@ -218,6 +241,7 @@ const modelCases: ModelCase[] = [
     },
     lifeExpectancy: 90,
     monthlyLiving: 15,
+    housingType: "own",
     hasLoan: true,
     loanAmount: 3000,
     loanRate: 1.5,
@@ -225,6 +249,12 @@ const modelCases: ModelCase[] = [
     loanStartAge: 30,
     loanMethod: "equal_installment",
     loanPrepayments: [],
+    monthlyRent: 0,
+    fixedCosts: [
+      { name: "固定資産税", annualAmount: 10 },
+      { name: "修繕積立金", annualAmount: 12 },
+    ],
+    carLoans: [],
     hasChildren: false,
     children: [],
     currentSavings: 400,
@@ -250,6 +280,7 @@ const modelCases: ModelCase[] = [
     },
     lifeExpectancy: 90,
     monthlyLiving: 25,
+    housingType: "own",
     hasLoan: true,
     loanAmount: 4000,
     loanRate: 1.3,
@@ -257,6 +288,12 @@ const modelCases: ModelCase[] = [
     loanStartAge: 35,
     loanMethod: "equal_installment",
     loanPrepayments: [],
+    monthlyRent: 0,
+    fixedCosts: [
+      { name: "固定資産税", annualAmount: 12 },
+      { name: "自動車維持費", annualAmount: 35 },
+    ],
+    carLoans: [],
     hasChildren: true,
     children: [
       {
@@ -295,6 +332,7 @@ const modelCases: ModelCase[] = [
     },
     lifeExpectancy: 90,
     monthlyLiving: 30,
+    housingType: "own",
     hasLoan: true,
     loanAmount: 3500,
     loanRate: 1.8,
@@ -302,12 +340,51 @@ const modelCases: ModelCase[] = [
     loanStartAge: 35,
     loanMethod: "equal_installment",
     loanPrepayments: [],
+    monthlyRent: 0,
+    fixedCosts: [{ name: "固定資産税", annualAmount: 10 }],
+    carLoans: [],
     hasChildren: false,
     children: [],
     currentSavings: 2500,
     monthlySavings: 8,
     annualReturn: 2.0,
     retirementMonthlyExpense: 25,
+  },
+  {
+    name: "独身会社員（賃貸）",
+    description: "28歳独身。賃貸暮らし。まだ住宅購入は考えていない。",
+    person1: {
+      age: 28,
+      retirementAge: 65,
+      monthlyIncome: 25,
+      pensionMonthly: 13,
+    },
+    hasPartner: false,
+    person2: {
+      age: 28,
+      retirementAge: 65,
+      monthlyIncome: 0,
+      pensionMonthly: 0,
+    },
+    lifeExpectancy: 90,
+    monthlyLiving: 12,
+    housingType: "rent",
+    hasLoan: false,
+    loanAmount: 0,
+    loanRate: 0,
+    loanYears: 35,
+    loanStartAge: 28,
+    loanMethod: "equal_installment",
+    loanPrepayments: [],
+    monthlyRent: 8,
+    fixedCosts: [],
+    carLoans: [],
+    hasChildren: false,
+    children: [],
+    currentSavings: 200,
+    monthlySavings: 3,
+    annualReturn: 3.0,
+    retirementMonthlyExpense: 18,
   },
 ];
 
@@ -317,6 +394,7 @@ type ShareData = {
   p2: Person;
   le: number;
   ml: number;
+  ht: HousingType;
   hl: boolean;
   la: number;
   lr: number;
@@ -324,6 +402,9 @@ type ShareData = {
   lsa: number;
   lm: RepaymentMethod;
   lpp: { y: number; a: number; t: "shorten" | "reduce" }[];
+  mr: number;
+  fc: { n: string; a: number }[];
+  cl: { sa: number; a: number; r: number; y: number }[];
   hc: boolean;
   ch: Child[];
   cs: number;
@@ -475,6 +556,21 @@ export default function Home() {
     20,
   );
 
+  const [housingType, setHousingType] = useLocalStorageState<HousingType>(
+    "lp_housingType",
+    "own",
+  );
+  const [monthlyRent, setMonthlyRent] = useLocalStorageState(
+    "lp_monthlyRent",
+    8,
+  );
+  const [fixedCosts, setFixedCosts] = useLocalStorageState<
+    { name: string; annualAmount: number }[]
+  >("lp_fixedCosts", []);
+  const [carLoans, setCarLoans] = useLocalStorageState<
+    { startAge: number; amount: number; rate: number; years: number }[]
+  >("lp_carLoans", []);
+
   const [hasLoan, setHasLoan] = useLocalStorageState("lp_hasLoan", true);
   const [loanAmount, setLoanAmount] = useLocalStorageState(
     "lp_loanAmount",
@@ -525,21 +621,54 @@ export default function Home() {
 
   const totalMonthlyIncome =
     person1.monthlyIncome + (hasPartner ? person2.monthlyIncome : 0);
-  const loanMonthlyPaymentMan = hasLoan
-    ? calcInitialMonthlyPayment(
-        loanAmount * 10000,
-        loanRate / 100 / 12,
-        loanYears * 12,
-        loanMethod,
-      ) / 10000
-    : 0;
+  const loanMonthlyPaymentMan =
+    housingType === "own" && hasLoan
+      ? calcInitialMonthlyPayment(
+          loanAmount * 10000,
+          loanRate / 100 / 12,
+          loanYears * 12,
+          loanMethod,
+        ) / 10000
+      : 0;
+  const carLoanMonthlyMan = carLoans.reduce((sum, cl) => {
+    if (cl.amount <= 0 || cl.years <= 0) return sum;
+    const totalMonths = cl.years * 12;
+    const mr = cl.rate / 100 / 12;
+    const mp =
+      mr === 0
+        ? (cl.amount * 10000) / totalMonths
+        : (cl.amount * 10000 * mr * (1 + mr) ** totalMonths) /
+          ((1 + mr) ** totalMonths - 1);
+    // 現在返済中のもののみ
+    const elapsed = person1.age - cl.startAge;
+    if (elapsed < 0 || elapsed >= cl.years) return sum;
+    return sum + mp / 10000;
+  }, 0);
+  const housingMonthlyMan =
+    housingType === "rent" ? monthlyRent : loanMonthlyPaymentMan;
+  const annualFixedCostsMan = fixedCosts.reduce(
+    (sum, item) => sum + item.annualAmount,
+    0,
+  );
+  const monthlyFixedCostsMan = annualFixedCostsMan / 12;
   const maxMonthlyLiving = Math.max(
     0,
-    Math.floor(totalMonthlyIncome - loanMonthlyPaymentMan),
+    Math.floor(
+      totalMonthlyIncome -
+        housingMonthlyMan -
+        carLoanMonthlyMan -
+        monthlyFixedCostsMan,
+    ),
   );
   const maxMonthlySavings = Math.max(
     0,
-    Math.floor(totalMonthlyIncome - loanMonthlyPaymentMan - monthlyLiving),
+    Math.floor(
+      totalMonthlyIncome -
+        housingMonthlyMan -
+        carLoanMonthlyMan -
+        monthlyFixedCostsMan -
+        monthlyLiving,
+    ),
   );
 
   useEffect(() => {
@@ -555,6 +684,7 @@ export default function Home() {
         setPerson2(data.p2);
         setLifeExpectancy(data.le);
         setMonthlyLiving(data.ml);
+        setHousingType(data.ht ?? "own");
         setHasLoan(data.hl);
         setLoanAmount(data.la);
         setLoanRate(data.lr);
@@ -563,6 +693,18 @@ export default function Home() {
         setLoanMethod(data.lm);
         setLoanPrepayments(
           data.lpp.map((p) => ({ yearFromStart: p.y, amount: p.a, type: p.t })),
+        );
+        setMonthlyRent(data.mr ?? 8);
+        setFixedCosts(
+          (data.fc ?? []).map((f) => ({ name: f.n, annualAmount: f.a })),
+        );
+        setCarLoans(
+          (data.cl ?? []).map((c) => ({
+            startAge: c.sa,
+            amount: c.a,
+            rate: c.r,
+            years: c.y,
+          })),
         );
         setHasChildren(data.hc);
         setChildren(data.ch);
@@ -637,6 +779,7 @@ export default function Home() {
     setPerson2(mc.person2);
     setLifeExpectancy(mc.lifeExpectancy);
     setMonthlyLiving(mc.monthlyLiving);
+    setHousingType(mc.housingType);
     setHasLoan(mc.hasLoan);
     setLoanAmount(mc.loanAmount);
     setLoanRate(mc.loanRate);
@@ -644,6 +787,9 @@ export default function Home() {
     setLoanStartAge(mc.loanStartAge);
     setLoanMethod(mc.loanMethod);
     setLoanPrepayments(mc.loanPrepayments);
+    setMonthlyRent(mc.monthlyRent);
+    setFixedCosts(mc.fixedCosts);
+    setCarLoans(mc.carLoans);
     setHasChildren(mc.hasChildren);
     setChildren(mc.children);
     setCurrentSavings(mc.currentSavings);
@@ -681,6 +827,7 @@ export default function Home() {
       p2: person2,
       le: lifeExpectancy,
       ml: monthlyLiving,
+      ht: housingType,
       hl: hasLoan,
       la: loanAmount,
       lr: loanRate,
@@ -691,6 +838,14 @@ export default function Home() {
         y: p.yearFromStart,
         a: p.amount,
         t: p.type,
+      })),
+      mr: monthlyRent,
+      fc: fixedCosts.map((f) => ({ n: f.name, a: f.annualAmount })),
+      cl: carLoans.map((c) => ({
+        sa: c.startAge,
+        a: c.amount,
+        r: c.rate,
+        y: c.years,
       })),
       hc: hasChildren,
       ch: hasChildren ? children : [],
@@ -739,6 +894,7 @@ export default function Home() {
       },
       lifeExpectancy,
       monthlyLiving: toYen(monthlyLiving),
+      housingType,
       hasLoan,
       loanAmount: toYen(loanAmount),
       loanRate,
@@ -748,6 +904,17 @@ export default function Home() {
       loanPrepayments: loanPrepayments.map((p) => ({
         ...p,
         amount: toYen(p.amount),
+      })),
+      monthlyRent: toYen(monthlyRent),
+      fixedCosts: fixedCosts.map((f) => ({
+        name: f.name,
+        annualAmount: toYen(f.annualAmount),
+      })),
+      carLoans: carLoans.map((c) => ({
+        startAge: c.startAge,
+        amount: toYen(c.amount),
+        rate: c.rate,
+        years: c.years,
       })),
       children: hasChildren ? children : [],
       currentSavings: toYen(currentSavings),
@@ -766,9 +933,11 @@ export default function Home() {
 
   const next = () => {
     if (step === 0 && !hasPartner) {
+      // skip partner step
       setStep(2);
-    } else if (step === 4 && !hasChildren) {
-      setStep(5);
+    } else if (step === 5 && !hasChildren) {
+      // skip children details
+      setStep(6);
     } else if (step === TOTAL_STEPS - 1) {
       runSimulation();
     } else {
@@ -785,8 +954,8 @@ export default function Home() {
       setStep(-1);
     } else if (step === 2 && !hasPartner) {
       setStep(0);
-    } else if (step === 5 && !hasChildren) {
-      setStep(4);
+    } else if (step === 6 && !hasChildren) {
+      setStep(5);
     } else {
       setStep(step - 1);
     }
@@ -890,140 +1059,432 @@ export default function Home() {
 
       case 2:
         return (
-          <QuestionCard question="住宅ローン">
-            <YesNo
-              value={hasLoan}
-              onChange={setHasLoan}
-              yesLabel="あり"
-              noLabel="なし"
-            />
-            {hasLoan && (
+          <QuestionCard question="住居について">
+            <div className="mb-8">
+              <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">
+                住居タイプ
+              </p>
+              <YesNo
+                value={housingType === "own"}
+                onChange={(v) => setHousingType(v ? "own" : "rent")}
+                yesLabel="持ち家"
+                noLabel="賃貸"
+              />
+            </div>
+            {housingType === "rent" && (
               <div className="mt-8">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                  <NumberInput
-                    label="借入額（万円）"
-                    value={loanAmount}
-                    onChange={setLoanAmount}
-                    step={100}
-                    min={0}
-                    suffix={fmtMan(loanAmount)}
+                <NumberInput
+                  label="月額家賃（万円）"
+                  value={monthlyRent}
+                  onChange={setMonthlyRent}
+                  step={1}
+                  min={0}
+                  suffix={fmtMan(monthlyRent)}
+                />
+              </div>
+            )}
+            {housingType === "own" && (
+              <>
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">
+                    住宅ローン
+                  </p>
+                  <YesNo
+                    value={hasLoan}
+                    onChange={setHasLoan}
+                    yesLabel="あり"
+                    noLabel="なし"
                   />
-                  <NumberInput
-                    label="金利（%）"
-                    value={loanRate}
-                    onChange={setLoanRate}
-                    step={0.01}
-                    min={0}
-                    max={20}
-                  />
-                  <NumberInput
-                    label="返済期間（年）"
-                    value={loanYears}
-                    onChange={setLoanYears}
-                    min={1}
-                    max={50}
-                  />
-                  <NumberInput
-                    label="借入時の年齢"
-                    value={loanStartAge}
-                    onChange={setLoanStartAge}
-                    min={18}
-                    max={80}
-                  />
-                  <div className="mb-6">
-                    <label className="mb-1 block text-xs font-medium uppercase tracking-widest text-neutral-500">
-                      返済方式
-                    </label>
-                    <select
-                      value={loanMethod}
-                      onChange={(e) =>
-                        setLoanMethod(e.target.value as RepaymentMethod)
-                      }
-                      className={selectCls}
-                    >
-                      <option value="equal_installment">元利均等返済</option>
-                      <option value="equal_principal">元金均等返済</option>
-                    </select>
-                  </div>
                 </div>
-                <div className="mt-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">
-                      繰り上げ返済
-                    </p>
-                    <button
-                      type="button"
-                      onClick={addPrepayment}
-                      className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
-                    >
-                      + 追加
-                    </button>
-                  </div>
-                  {loanPrepayments.map((p, i) => (
-                    <div
-                      key={`pp-${i}`}
-                      className="mb-3 flex flex-wrap items-end gap-6 border border-neutral-300 p-4"
-                    >
-                      <div>
-                        <label className="mb-1 block text-xs text-neutral-400">
-                          年数
-                        </label>
-                        <input
-                          type="number"
-                          value={p.yearFromStart}
-                          onChange={(e) =>
-                            updatePrepayment(i, "yearFromStart", e.target.value)
-                          }
-                          className="w-20 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
-                          min={1}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-neutral-400">
-                          金額（万円）
-                        </label>
-                        <input
-                          type="number"
-                          value={p.amount}
-                          onChange={(e) =>
-                            updatePrepayment(i, "amount", e.target.value)
-                          }
-                          className="w-32 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
-                          min={0}
-                          step={10}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-neutral-400">
-                          タイプ
+                {hasLoan && (
+                  <div className="mt-8">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                      <NumberInput
+                        label="借入額（万円）"
+                        value={loanAmount}
+                        onChange={setLoanAmount}
+                        step={100}
+                        min={0}
+                        suffix={fmtMan(loanAmount)}
+                      />
+                      <NumberInput
+                        label="金利（%）"
+                        value={loanRate}
+                        onChange={setLoanRate}
+                        step={0.01}
+                        min={0}
+                        max={20}
+                      />
+                      <NumberInput
+                        label="返済期間（年）"
+                        value={loanYears}
+                        onChange={setLoanYears}
+                        min={1}
+                        max={50}
+                      />
+                      <NumberInput
+                        label="借入時の年齢"
+                        value={loanStartAge}
+                        onChange={setLoanStartAge}
+                        min={18}
+                        max={80}
+                      />
+                      <div className="mb-6">
+                        <label className="mb-1 block text-xs font-medium uppercase tracking-widest text-neutral-500">
+                          返済方式
                         </label>
                         <select
-                          value={p.type}
+                          value={loanMethod}
                           onChange={(e) =>
-                            updatePrepayment(i, "type", e.target.value)
+                            setLoanMethod(e.target.value as RepaymentMethod)
                           }
-                          className="border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                          className={selectCls}
                         >
-                          <option value="shorten">期間短縮型</option>
-                          <option value="reduce">返済額軽減型</option>
+                          <option value="equal_installment">
+                            元利均等返済
+                          </option>
+                          <option value="equal_principal">元金均等返済</option>
                         </select>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removePrepayment(i)}
-                        className="text-xs text-neutral-400 hover:text-neutral-900 transition-colors pb-2"
-                      >
-                        削除
-                      </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="mt-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">
+                          繰り上げ返済
+                        </p>
+                        <button
+                          type="button"
+                          onClick={addPrepayment}
+                          className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
+                        >
+                          + 追加
+                        </button>
+                      </div>
+                      {loanPrepayments.map((p, i) => (
+                        <div
+                          key={`pp-${i}`}
+                          className="mb-3 flex flex-wrap items-end gap-6 border border-neutral-300 p-4"
+                        >
+                          <div>
+                            <label className="mb-1 block text-xs text-neutral-400">
+                              年数
+                            </label>
+                            <input
+                              type="number"
+                              value={p.yearFromStart}
+                              onChange={(e) =>
+                                updatePrepayment(
+                                  i,
+                                  "yearFromStart",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-20 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                              min={1}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-xs text-neutral-400">
+                              金額（万円）
+                            </label>
+                            <input
+                              type="number"
+                              value={p.amount}
+                              onChange={(e) =>
+                                updatePrepayment(i, "amount", e.target.value)
+                              }
+                              className="w-32 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                              min={0}
+                              step={10}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-xs text-neutral-400">
+                              タイプ
+                            </label>
+                            <select
+                              value={p.type}
+                              onChange={(e) =>
+                                updatePrepayment(i, "type", e.target.value)
+                              }
+                              className="border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                            >
+                              <option value="shorten">期間短縮型</option>
+                              <option value="reduce">返済額軽減型</option>
+                            </select>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removePrepayment(i)}
+                            className="text-xs text-neutral-400 hover:text-neutral-900 transition-colors pb-2"
+                          >
+                            削除
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </QuestionCard>
         );
 
       case 3:
+        return (
+          <QuestionCard
+            question="固定費"
+            sub="自動車維持費、固定資産税、火災保険、修繕費など年間でかかる費用"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">
+                固定費の項目
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  setFixedCosts([...fixedCosts, { name: "", annualAmount: 0 }])
+                }
+                className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
+              >
+                + 追加
+              </button>
+            </div>
+            {fixedCosts.length === 0 && (
+              <p className="mb-4 text-sm text-neutral-400">
+                固定費の項目がありません。「+ 追加」で項目を追加できます。
+              </p>
+            )}
+            {fixedCosts.map((fc, i) => (
+              <div
+                key={`fc-${i}`}
+                className="mb-3 flex flex-wrap items-end gap-6 border border-neutral-300 p-4"
+              >
+                <div className="flex-1 min-w-[120px]">
+                  <label className="mb-1 block text-xs text-neutral-400">
+                    項目名
+                  </label>
+                  <input
+                    type="text"
+                    value={fc.name}
+                    onChange={(e) => {
+                      const updated = [...fixedCosts];
+                      updated[i] = { ...updated[i], name: e.target.value };
+                      setFixedCosts(updated);
+                    }}
+                    placeholder="例: 固定資産税"
+                    className="w-full border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-neutral-400">
+                    年額（万円）
+                  </label>
+                  <input
+                    type="number"
+                    value={fc.annualAmount}
+                    onChange={(e) => {
+                      const updated = [...fixedCosts];
+                      updated[i] = {
+                        ...updated[i],
+                        annualAmount: Number(e.target.value),
+                      };
+                      setFixedCosts(updated);
+                    }}
+                    className="w-32 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                    min={0}
+                    step={1}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFixedCosts(fixedCosts.filter((_, idx) => idx !== i))
+                  }
+                  className="text-xs text-neutral-400 hover:text-neutral-900 transition-colors pb-2"
+                >
+                  削除
+                </button>
+              </div>
+            ))}
+            {fixedCosts.length > 0 && (
+              <div className="mt-4 rounded border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+                <div className="flex justify-between font-medium">
+                  <span>固定費 年間合計</span>
+                  <span>{fmtMan(annualFixedCostsMan)}</span>
+                </div>
+                <div className="mt-1 flex justify-between text-neutral-500">
+                  <span>月あたり</span>
+                  <span>
+                    {fmtMan(Math.round(monthlyFixedCostsMan * 10) / 10)}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className="mt-6">
+              <p className="mb-3 text-xs text-neutral-400">
+                よくある項目をまとめて追加:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: "固定資産税", annualAmount: 12 },
+                  { name: "火災保険", annualAmount: 2 },
+                  { name: "修繕積立金", annualAmount: 12 },
+                  { name: "自動車維持費", annualAmount: 40 },
+                  { name: "管理費", annualAmount: 18 },
+                ]
+                  .filter(
+                    (preset) =>
+                      !fixedCosts.some((fc) => fc.name === preset.name),
+                  )
+                  .map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() =>
+                        setFixedCosts([...fixedCosts, { ...preset }])
+                      }
+                      className="border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
+                    >
+                      + {preset.name}
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* 自動車ローン */}
+            <div className="mt-12 border-t border-neutral-200 pt-8">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">
+                  自動車ローン
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCarLoans([
+                      ...carLoans,
+                      {
+                        startAge: person1.age,
+                        amount: 300,
+                        rate: 2.5,
+                        years: 5,
+                      },
+                    ])
+                  }
+                  className="text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-900 transition-colors"
+                >
+                  + 追加
+                </button>
+              </div>
+              {carLoans.length === 0 && (
+                <p className="mb-4 text-sm text-neutral-400">
+                  自動車ローンがありません。「+ 追加」で追加できます。
+                </p>
+              )}
+              {carLoans.map((cl, i) => (
+                <div
+                  key={`cl-${i}`}
+                  className="mb-3 border border-neutral-300 p-4"
+                >
+                  <div className="flex flex-wrap items-end gap-6">
+                    <div>
+                      <label className="mb-1 block text-xs text-neutral-400">
+                        借入時の年齢
+                      </label>
+                      <input
+                        type="number"
+                        value={cl.startAge}
+                        onChange={(e) => {
+                          const updated = [...carLoans];
+                          updated[i] = {
+                            ...updated[i],
+                            startAge: Number(e.target.value),
+                          };
+                          setCarLoans(updated);
+                        }}
+                        className="w-20 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                        min={18}
+                        max={80}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-neutral-400">
+                        借入額（万円）
+                      </label>
+                      <input
+                        type="number"
+                        value={cl.amount}
+                        onChange={(e) => {
+                          const updated = [...carLoans];
+                          updated[i] = {
+                            ...updated[i],
+                            amount: Number(e.target.value),
+                          };
+                          setCarLoans(updated);
+                        }}
+                        className="w-28 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                        min={0}
+                        step={10}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-neutral-400">
+                        金利（%）
+                      </label>
+                      <input
+                        type="number"
+                        value={cl.rate}
+                        onChange={(e) => {
+                          const updated = [...carLoans];
+                          updated[i] = {
+                            ...updated[i],
+                            rate: Number(e.target.value),
+                          };
+                          setCarLoans(updated);
+                        }}
+                        className="w-20 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                        min={0}
+                        max={20}
+                        step={0.1}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-neutral-400">
+                        返済期間（年）
+                      </label>
+                      <input
+                        type="number"
+                        value={cl.years}
+                        onChange={(e) => {
+                          const updated = [...carLoans];
+                          updated[i] = {
+                            ...updated[i],
+                            years: Number(e.target.value),
+                          };
+                          setCarLoans(updated);
+                        }}
+                        className="w-20 border-b border-neutral-300 bg-transparent px-0 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                        min={1}
+                        max={10}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCarLoans(carLoans.filter((_, idx) => idx !== i))
+                      }
+                      className="text-xs text-neutral-400 hover:text-neutral-900 transition-colors pb-2"
+                    >
+                      削除
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </QuestionCard>
+        );
+
+      case 4:
         return (
           <QuestionCard question="世帯の生活">
             <div className="mb-6 rounded border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
@@ -1031,10 +1492,32 @@ export default function Home() {
                 <span>世帯の手取り月収</span>
                 <span>{fmtMan(totalMonthlyIncome)}</span>
               </div>
-              {hasLoan && (
+              {housingType === "own" && hasLoan && (
                 <div className="mt-1 flex justify-between">
                   <span>住宅ローン返済額</span>
                   <span>-{fmtMan(Math.round(loanMonthlyPaymentMan))}</span>
+                </div>
+              )}
+              {housingType === "rent" && (
+                <div className="mt-1 flex justify-between">
+                  <span>家賃</span>
+                  <span>-{fmtMan(monthlyRent)}</span>
+                </div>
+              )}
+              {carLoanMonthlyMan > 0 && (
+                <div className="mt-1 flex justify-between">
+                  <span>自動車ローン</span>
+                  <span>
+                    -{fmtMan(Math.round(carLoanMonthlyMan * 10) / 10)}
+                  </span>
+                </div>
+              )}
+              {annualFixedCostsMan > 0 && (
+                <div className="mt-1 flex justify-between">
+                  <span>固定費（月割り）</span>
+                  <span>
+                    -{fmtMan(Math.round(monthlyFixedCostsMan * 10) / 10)}
+                  </span>
                 </div>
               )}
               <div className="mt-2 flex justify-between border-t border-neutral-300 pt-2 font-medium">
@@ -1050,7 +1533,7 @@ export default function Home() {
               min={0}
               max={maxMonthlyLiving}
               suffix={fmtMan(monthlyLiving)}
-              maxMessage="月収からローン返済額を引いた上限に達しています"
+              maxMessage="月収から住居費・固定費を引いた上限に達しています"
             />
             <NumberInput
               label="想定寿命"
@@ -1062,7 +1545,7 @@ export default function Home() {
           </QuestionCard>
         );
 
-      case 4:
+      case 5:
         return (
           <QuestionCard question="お子さまについて">
             <YesNo
@@ -1147,7 +1630,7 @@ export default function Home() {
           </QuestionCard>
         );
 
-      case 5:
+      case 6:
         return (
           <QuestionCard question="貯蓄と資産運用">
             <div className="mb-6 rounded border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
@@ -1155,10 +1638,32 @@ export default function Home() {
                 <span>世帯の手取り月収</span>
                 <span>{fmtMan(totalMonthlyIncome)}</span>
               </div>
-              {hasLoan && (
+              {housingType === "own" && hasLoan && (
                 <div className="mt-1 flex justify-between">
                   <span>住宅ローン返済額</span>
                   <span>-{fmtMan(Math.round(loanMonthlyPaymentMan))}</span>
+                </div>
+              )}
+              {housingType === "rent" && (
+                <div className="mt-1 flex justify-between">
+                  <span>家賃</span>
+                  <span>-{fmtMan(monthlyRent)}</span>
+                </div>
+              )}
+              {carLoanMonthlyMan > 0 && (
+                <div className="mt-1 flex justify-between">
+                  <span>自動車ローン</span>
+                  <span>
+                    -{fmtMan(Math.round(carLoanMonthlyMan * 10) / 10)}
+                  </span>
+                </div>
+              )}
+              {annualFixedCostsMan > 0 && (
+                <div className="mt-1 flex justify-between">
+                  <span>固定費（月割り）</span>
+                  <span>
+                    -{fmtMan(Math.round(monthlyFixedCostsMan * 10) / 10)}
+                  </span>
                 </div>
               )}
               <div className="mt-1 flex justify-between">
@@ -1187,7 +1692,7 @@ export default function Home() {
                 min={0}
                 max={maxMonthlySavings}
                 suffix={fmtMan(monthlySavings)}
-                maxMessage="月収からローン返済額・生活費を引いた上限に達しています"
+                maxMessage="月収から住居費・固定費・生活費を引いた上限に達しています"
               />
             </div>
             <NumberInput
@@ -1201,7 +1706,7 @@ export default function Home() {
           </QuestionCard>
         );
 
-      case 6:
+      case 7:
         return (
           <QuestionCard
             question="老後の生活費"
@@ -1311,10 +1816,12 @@ export default function Home() {
           <div className="mb-8 sm:mb-16 grid grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-5">
             <div className="bg-white p-4 sm:p-8">
               <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400">
-                住宅ローン総額
+                {housingType === "rent" ? "家賃総額" : "住宅ローン総額"}
               </p>
               <p className="text-base sm:text-2xl font-medium tracking-tight text-neutral-900">
-                {fmtYenToMan(result.totalLoanPayment)}
+                {housingType === "rent"
+                  ? fmtYenToMan(result.totalRentPayment)
+                  : fmtYenToMan(result.totalLoanPayment)}
               </p>
             </div>
             <div className="bg-white p-4 sm:p-8">
@@ -1561,7 +2068,13 @@ export default function Home() {
                         生活費
                       </th>
                       <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
-                        ローン
+                        {housingType === "rent" ? "家賃" : "ローン"}
+                      </th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                        車ローン
+                      </th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
+                        固定費
                       </th>
                       <th className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs font-medium uppercase tracking-widest text-neutral-400 text-right">
                         教育費
@@ -1593,8 +2106,22 @@ export default function Home() {
                           {fmtYenToMan(row.livingCost)}
                         </td>
                         <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
-                          {row.loanPayment > 0
-                            ? fmtYenToMan(row.loanPayment)
+                          {housingType === "rent"
+                            ? row.rentCost > 0
+                              ? fmtYenToMan(row.rentCost)
+                              : "-"
+                            : row.loanPayment > 0
+                              ? fmtYenToMan(row.loanPayment)
+                              : "-"}
+                        </td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
+                          {row.carLoanPayment > 0
+                            ? fmtYenToMan(row.carLoanPayment)
+                            : "-"}
+                        </td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">
+                          {row.fixedCosts > 0
+                            ? fmtYenToMan(row.fixedCosts)
                             : "-"}
                         </td>
                         <td className="px-2 py-2 sm:px-4 sm:py-3 text-right text-neutral-600">

@@ -26,6 +26,8 @@ export function calculateMinimumIncome(
     const mid = (lo + hi) / 2;
     const input: LifePlanInput = {
       ...baseInput,
+      // 余剰を全て貯蓄に回せるよう、積立額の上限を外す
+      monthlySavings: mid,
       person1: {
         ...baseInput.person1,
         monthlyIncome: mid * ratio,

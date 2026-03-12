@@ -160,6 +160,24 @@ export default function LifePlanCharts({ schedule, retirementAge }: Props) {
               fill="#737373"
             />
             <Bar
+              dataKey="carLoanPayment"
+              name="自動車ローン"
+              stackId="expense"
+              fill="#404040"
+            />
+            <Bar
+              dataKey="rentCost"
+              name="家賃"
+              stackId="expense"
+              fill="#a3a3a3"
+            />
+            <Bar
+              dataKey="fixedCosts"
+              name="固定費"
+              stackId="expense"
+              fill="#525252"
+            />
+            <Bar
               dataKey="educationCost"
               name="教育費"
               stackId="expense"

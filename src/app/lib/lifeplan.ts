@@ -19,6 +19,20 @@ export type Person = {
   pensionMonthly: number;
 };
 
+export type FixedCostItem = {
+  name: string;
+  annualAmount: number; // 円
+};
+
+export type CarLoan = {
+  startAge: number;
+  amount: number; // 円
+  rate: number; // %
+  years: number;
+};
+
+export type HousingType = "own" | "rent";
+
 export type LifePlanInput = {
   person1: Person;
   hasPartner: boolean;
@@ -26,7 +40,10 @@ export type LifePlanInput = {
   lifeExpectancy: number;
   monthlyLiving: number;
 
-  // 住宅ローン
+  // 住居
+  housingType: HousingType;
+
+  // 住宅ローン（housingType === "own" の場合）
   hasLoan: boolean;
   loanAmount: number;
   loanRate: number;
@@ -34,6 +51,15 @@ export type LifePlanInput = {
   loanStartAge: number;
   loanMethod: RepaymentMethod;
   loanPrepayments: Prepayment[];
+
+  // 賃貸（housingType === "rent" の場合）
+  monthlyRent: number; // 円
+
+  // 固定費（固定資産税、火災保険、修繕費等）
+  fixedCosts: FixedCostItem[];
+
+  // 自動車ローン
+  carLoans: CarLoan[];
 
   // 教育
   children: Child[];
@@ -50,6 +76,9 @@ export type YearlyLifePlan = {
   phase: string;
   income: number;
   loanPayment: number;
+  carLoanPayment: number;
+  rentCost: number;
+  fixedCosts: number;
   educationCost: number;
   livingCost: number;
   savings: number;
@@ -59,6 +88,9 @@ export type YearlyLifePlan = {
 export type LifePlanResult = {
   schedule: YearlyLifePlan[];
   totalLoanPayment: number;
+  totalCarLoanPayment: number;
+  totalRentPayment: number;
+  totalFixedCosts: number;
   totalEducationCost: number;
   retirementBalance: number;
   balanceAtRetirement: number;
@@ -139,6 +171,12 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
   let balance = input.currentSavings;
   const monthlyRate = input.annualReturn / 100 / 12;
 
+  // 固定費の年間合計
+  const annualFixedCosts = input.fixedCosts.reduce(
+    (sum, item) => sum + item.annualAmount,
+    0,
+  );
+
   // ローン月額計算
   let loanMonthlyPayment = 0;
   let loanRemaining = 0;
@@ -151,8 +189,10 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
   const loanElapsedYears = Math.max(0, input.person1.age - input.loanStartAge);
   const loanElapsedMonths = loanElapsedYears * 12;
 
+  const hasActiveLoan = input.housingType === "own" && input.hasLoan;
+
   if (
-    input.hasLoan &&
+    hasActiveLoan &&
     input.loanAmount > 0 &&
     loanElapsedYears < input.loanYears
   ) {
@@ -192,7 +232,33 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     if (p.amount > 0) prepaymentMap.set(p.yearFromStart, p);
   }
 
+  // 自動車ローンの初期化
+  const carLoanStates = input.carLoans.map((cl) => {
+    const totalMonths = cl.years * 12;
+    const monthlyRate = cl.rate / 100 / 12;
+    let monthlyPayment: number;
+    if (monthlyRate === 0) {
+      monthlyPayment = cl.amount / totalMonths;
+    } else {
+      monthlyPayment =
+        (cl.amount * monthlyRate * (1 + monthlyRate) ** totalMonths) /
+        ((1 + monthlyRate) ** totalMonths - 1);
+    }
+    // 現在の年齢を基準に経過を計算
+    const elapsedYears = Math.max(0, input.person1.age - cl.startAge);
+    let remaining = cl.amount;
+    for (let m = 0; m < elapsedYears * 12; m++) {
+      if (remaining <= 0) break;
+      const interest = remaining * monthlyRate;
+      const payment = Math.min(monthlyPayment, remaining + interest);
+      remaining = Math.max(0, remaining - (payment - interest));
+    }
+    return { monthlyPayment, monthlyRate, remaining };
+  });
+
   let totalLoanPayment = 0;
+  let totalCarLoanPayment = 0;
+  let totalRentPayment = 0;
   let totalEducationCost = 0;
   let balanceAtRetirement = 0;
   let assetDepletionAge: number | null = null;
@@ -227,9 +293,26 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       ? input.monthlyLiving * 12
       : input.retirementMonthlyExpense * 12;
 
-    // ローン支払い（年間）
+    // 賃貸家賃（年間）
+    const annualRent =
+      input.housingType === "rent" ? input.monthlyRent * 12 : 0;
+
+    // 自動車ローン支払い（年間）
+    let annualCarLoanPayment = 0;
+    for (const cls of carLoanStates) {
+      if (cls.remaining <= 0) continue;
+      for (let m = 0; m < 12; m++) {
+        if (cls.remaining <= 0) break;
+        const interest = cls.remaining * cls.monthlyRate;
+        const payment = Math.min(cls.monthlyPayment, cls.remaining + interest);
+        cls.remaining = Math.max(0, cls.remaining - (payment - interest));
+        annualCarLoanPayment += payment;
+      }
+    }
+
+    // 住宅ローン支払い（年間）
     let annualLoanPayment = 0;
-    if (input.hasLoan && loanRemaining > 0) {
+    if (hasActiveLoan && loanRemaining > 0) {
       loanYearCount++;
       for (let m = 0; m < 12; m++) {
         if (loanRemaining <= 0) break;
@@ -313,6 +396,8 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     }
 
     totalLoanPayment += annualLoanPayment;
+    totalCarLoanPayment += annualCarLoanPayment;
+    totalRentPayment += annualRent;
     totalEducationCost += annualEducation;
 
     // 年間貯蓄
@@ -320,7 +405,13 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
 
     // 資産残高の更新
     const surplus =
-      annualIncome - annualLiving - annualLoanPayment - annualEducation;
+      annualIncome -
+      annualLiving -
+      annualLoanPayment -
+      annualCarLoanPayment -
+      annualRent -
+      annualFixedCosts -
+      annualEducation;
 
     let actualSavings: number;
     if (anyoneWorking) {
@@ -354,6 +445,9 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
       phase,
       income: Math.round(annualIncome),
       loanPayment: Math.round(annualLoanPayment),
+      carLoanPayment: Math.round(annualCarLoanPayment),
+      rentCost: Math.round(annualRent),
+      fixedCosts: Math.round(annualFixedCosts),
       educationCost: Math.round(annualEducation),
       livingCost: Math.round(annualLiving),
       savings: Math.round(actualSavings),
@@ -376,7 +470,7 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
 
   // ローン詳細結果を別途計算
   let loanResult: LoanResult | null = null;
-  if (input.hasLoan && input.loanAmount > 0) {
+  if (hasActiveLoan && input.loanAmount > 0) {
     loanResult = calculateLoan(
       input.loanAmount,
       input.loanRate,
@@ -387,9 +481,14 @@ export function calculateLifePlan(input: LifePlanInput): LifePlanResult {
     );
   }
 
+  const totalYears = schedule.length;
+
   return {
     schedule,
     totalLoanPayment: Math.round(totalLoanPayment),
+    totalCarLoanPayment: Math.round(totalCarLoanPayment),
+    totalRentPayment: Math.round(totalRentPayment),
+    totalFixedCosts: Math.round(annualFixedCosts * totalYears),
     totalEducationCost: Math.round(totalEducationCost),
     retirementBalance: lastEntry.balance,
     balanceAtRetirement,
